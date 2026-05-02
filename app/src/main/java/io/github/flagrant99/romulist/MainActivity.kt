@@ -176,6 +176,7 @@ fun RomulistApp()
                         } else {
                             RootScreen(
                                 volumes = volumes,
+                                storageManager = storageManager,
                                 storageStatsManager = storageStatsManager,
                                 context = context,
                                 onVolumeClick = { folder -> selectedFolder = folder }
@@ -215,6 +216,7 @@ enum class AppDestinations(
 @Composable
 fun RootScreen(
     volumes: List<StorageVolume>,
+    storageManager: StorageManager?,
     storageStatsManager: StorageStatsManager?,
     context: Context,
     onVolumeClick: (File) -> Unit,
@@ -225,14 +227,14 @@ fun RootScreen(
         items(volumes) { volume ->
             val uuid = try
             {
-                val uuidStr = volume.uuid
-                if (uuidStr != null && uuidStr.length == 36)
+                if (volume.isPrimary)
                 {
-                    java.util.UUID.fromString(uuidStr)
+                    StorageManager.UUID_DEFAULT
                 }
                 else
                 {
-                    StorageManager.UUID_DEFAULT
+                    volume.directory?.let { storageManager?.getUuidForPath(it) }
+                        ?: StorageManager.UUID_DEFAULT
                 }
             } catch (e: Exception)
             {
