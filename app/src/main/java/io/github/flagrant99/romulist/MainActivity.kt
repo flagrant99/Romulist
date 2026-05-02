@@ -224,6 +224,37 @@ fun RootScreen(
 ) {
     LazyColumn(modifier = modifier)
     {
+        item {
+            Column(modifier = Modifier.padding(16.dp)) {
+                val osVersion = android.os.Build.VERSION.RELEASE
+                val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
+                val arch = if (is64Bit) "64-bit" else "32-bit"
+
+                Text(
+                    text = "SYSTEM INFO",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "OS: Android $osVersion",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Architecture: $arch",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = Color.Green.copy(alpha = 0.3f)
+                )
+            }
+        }
+
         items(volumes) { volume ->
             val uuid = try
             {
