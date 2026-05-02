@@ -1,0 +1,9 @@
+<romulist>
+	<folder name="nes Retroarch core fceumm_libretro_android.so" extensions="zip">
+		  <intent packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		    <action name="android.intent.action.MAIN" />
+		    <extra name="ROM" value="/path/to/game.nes" />
+		    <extra name="LIBRETRO" value="$dataDir/cores/fceumm_libretro_android.so" />
+		  </intent>
+	</folder>
+</romulist>
