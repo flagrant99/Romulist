@@ -48,8 +48,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.goepnavapp7.ui.theme.RomulistTheme
-import com.example.goepnavapp7.ui.theme.Purple80
+import io.github.flagrant99.romulist.ui.theme.RomulistTheme
+import io.github.flagrant99.romulist.ui.theme.Purple80
 import java.io.File
 
 class MainActivity : ComponentActivity()

@@ -1,4 +1,4 @@
-package com.example.goepnavapp7
+package io.github.flagrant99.romulist
 
 import android.content.Context
 import android.content.Intent
