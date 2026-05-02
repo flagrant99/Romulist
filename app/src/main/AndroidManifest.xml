@@ -9,12 +9,9 @@
 
     <queries>
         <package android:name="org.dolphinemu.dolphinemu" />
-        <package android:name="org.citra.citra_emu" />
-        <package android:name="org.ppsspp.ppsspp" />
         <package android:name="com.retroarch" />
         <package android:name="com.retroarch.ra32" />
-        <package android:name="org.azahar_emu.Azahar" />
-
+        <package android:name="com.retroarch.aarch64" />
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />

@@ -298,7 +298,9 @@ fun ListFiles(
 ) {
     val context = LocalContext.current
     val files = remember(currentPath) {
-        currentPath.listFiles()?.sortedBy { !it.isDirectory } ?: emptyList()
+        currentPath.listFiles()?.sortedWith(
+            compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
+        ) ?: emptyList()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
