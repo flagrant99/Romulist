@@ -25,10 +25,17 @@ fun ListFiles(
     onPathChange: (File) -> Unit
 ) {
     val context = LocalContext.current
+    val romulistConfig = remember(currentPath) {
+        File(currentPath, "romulist.xml").let { file ->
+            if (file.exists()) EmulatorNavigator.parseConfig(file) else null
+        }
+    }
     val files = remember(currentPath) {
-        currentPath.listFiles()?.sortedWith(
-            compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
-        ) ?: emptyList()
+        currentPath.listFiles()
+            ?.filter { it.name != "romulist.xml" }
+            ?.sortedWith(
+                compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
+            ) ?: emptyList()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -38,6 +45,15 @@ fun ListFiles(
             style = MaterialTheme.typography.labelSmall,
             color = Color.Gray
         )
+
+        if (romulistConfig != null) {
+            Text(
+                text = "Configuration loaded: romulist.xml",
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Green
+            )
+        }
 
         if (files.isEmpty()) {
             Box(
@@ -68,7 +84,8 @@ fun ListFiles(
                                     EmulatorNavigator.launchGame(
                                         context = context,
                                         favoritePath = favoritePath,
-                                        filePath = file.absolutePath
+                                        filePath = file.absolutePath,
+                                        config = romulistConfig
                                     )
                                 }
                             }
