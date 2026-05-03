@@ -152,6 +152,7 @@ object EmulatorNavigator {
 
             val appInfo = context.packageManager.getApplicationInfo(packageName, 0)
             val dataDir = appInfo.dataDir
+            val externalFilesDir = "/storage/emulated/0/Android/data/$packageName/files"
 
             intentCfg.data?.let {
                 data = Uri.parse(it)
@@ -160,6 +161,7 @@ object EmulatorNavigator {
             intentCfg.extras.forEach { (k, v) ->
                 val resolvedValue = v.replace("\$DATA_DIR", dataDir)
                     .replace("\$FILE_PATH", filePath)
+                    .replace("\$EXTERNAL_FILES_DIR", externalFilesDir)
                 putExtra(k, resolvedValue)
             }
         }
