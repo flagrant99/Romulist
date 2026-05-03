@@ -1,5 +1,6 @@
 package io.github.flagrant99.romulist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,8 +20,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import io.github.flagrant99.romulist.ui.theme.Black80
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -57,7 +61,6 @@ fun ListFiles(
     }
 
     val romulistConfig = configResult.first
-    val activeConfigPath = configResult.second
 
     val allowedExtensions = remember(romulistConfig) {
         romulistConfig?.systemConfig?.extensions?.map { it.lowercase() }?.toSet() ?: emptySet()
@@ -93,32 +96,24 @@ fun ListFiles(
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "Path: ${currentPath.absolutePath}",
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(8.dp),
             style = MaterialTheme.typography.labelSmall,
             color = Color.Gray
         )
 
-        if (activeConfigPath != null) {
+        if (romulistConfig?.systemConfig != null) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                 Text(
-                    text = "Config active from: $activeConfigPath",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Green
+                    text = "System: ${romulistConfig.systemConfig.name}",
+                    modifier = Modifier.fillMaxWidth()
+                    .background(Black80)
+                    .padding(8.dp),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
+                    ),
+                    color = Color.Green,
                 )
-                if (allowedExtensions.isNotEmpty()) {
-                    Text(
-                        text = "Filtering by: ${allowedExtensions.joinToString(", ")}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Cyan
-                    )
-                }
-                if (nameExclusions.isNotEmpty()) {
-                    Text(
-                        text = "Excluding: ${nameExclusions.joinToString(", ")}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Red
-                    )
-                }
             }
         }
 
