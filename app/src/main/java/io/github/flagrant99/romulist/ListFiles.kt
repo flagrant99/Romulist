@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
@@ -117,6 +119,13 @@ fun ListFiles(
     var files by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf<List<File>>(emptyList()) }
     var isScanning by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf(true) }
 
+    val firstItemFocusRequester = remember { FocusRequester() }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(currentPath) {
+        listState.scrollToItem(0)
+    }
+
     LaunchedEffect(currentPath, allowedExtensions, nameExclusions) {
         isScanning = true
         withContext(Dispatchers.IO) {
@@ -134,6 +143,12 @@ fun ListFiles(
                 ) ?: emptyList()
             files = result
             isScanning = false
+        }
+    }
+
+    LaunchedEffect(files, isScanning) {
+        if (!isScanning && files.isNotEmpty()) {
+            firstItemFocusRequester.requestFocus()
         }
     }
 
@@ -185,12 +200,16 @@ fun ListFiles(
                 )
             }
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(files) { file ->
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                state = listState
+            ) {
+                itemsIndexed(files) { index, file ->
                     FileRow(
                         name = file.name,
                         isDirectory = file.isDirectory,
-                        onBack = onBack
+                        onBack = onBack,
+                        focusRequester = if (index == 0) firstItemFocusRequester else remember { FocusRequester() }
                     ) {
                         if (file.isDirectory) {
                             onPathChange(file)

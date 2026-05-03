@@ -84,13 +84,27 @@ fun RomulistApp()
             }
         }
 
+        val handleHome = {
+            selectedFolder = favoriteFolder?.let { File(it) }
+            currentScreen = AppDestinations.HOME
+        }
+
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .onKeyEvent { keyEvent ->
-                    if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_A) {
-                        handleBack()
-                        true
+                    if (keyEvent.type == KeyEventType.KeyUp) {
+                        when (keyEvent.nativeKeyEvent.keyCode) {
+                            KeyEvent.KEYCODE_BUTTON_A -> {
+                                handleBack()
+                                true
+                            }
+                            KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y -> {
+                                handleHome()
+                                true
+                            }
+                            else -> false
+                        }
                     } else false
                 },
             bottomBar = {
@@ -113,12 +127,9 @@ fun RomulistApp()
                             onClick = {
                                 if (destination == AppDestinations.BACK) {
                                     handleBack()
+                                } else if (destination == AppDestinations.HOME) {
+                                    handleHome()
                                 } else {
-                                    // Navigate to favorite folder if HOME is clicked and favorite is set
-                                    if (destination == AppDestinations.HOME) {
-                                        selectedFolder = favoriteFolder?.let { File(it) }
-                                    }
-
                                     currentScreen = destination
                                 }
                             },

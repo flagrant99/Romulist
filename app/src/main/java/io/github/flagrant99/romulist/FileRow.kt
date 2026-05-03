@@ -1,6 +1,8 @@
 package io.github.flagrant99.romulist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,8 +14,15 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
@@ -27,15 +36,29 @@ fun FileRow(
     name: String,
     isDirectory: Boolean,
     onBack: () -> Unit,
+    focusRequester: FocusRequester = remember { FocusRequester() },
     onClick: () -> Unit
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onFocusChanged { isFocused = it.isFocused }
+            .focusable()
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyUp) {
                     when (keyEvent.nativeKeyEvent.keyCode) {
                         KeyEvent.KEYCODE_BUTTON_B -> {
+                            onClick()
+                            true
+                        }
+                        KeyEvent.KEYCODE_DPAD_CENTER -> {
+                            onClick()
+                            true
+                        }
+                        KeyEvent.KEYCODE_ENTER -> {
                             onClick()
                             true
                         }
@@ -47,6 +70,7 @@ fun FileRow(
                     }
                 } else false
             }
+            .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
