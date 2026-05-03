@@ -63,15 +63,22 @@ fun ListFiles(
         romulistConfig?.folders?.flatMap { it.extensions }?.map { it.lowercase() }?.toSet() ?: emptySet()
     }
 
-    var files by remember(currentPath, allowedExtensions) { mutableStateOf<List<File>>(emptyList()) }
-    var isScanning by remember(currentPath, allowedExtensions) { mutableStateOf(true) }
+    val nameExclusions = remember(romulistConfig) {
+        romulistConfig?.nameExclusions ?: emptyList()
+    }
 
-    LaunchedEffect(currentPath, allowedExtensions) {
+    var files by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf<List<File>>(emptyList()) }
+    var isScanning by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf(true) }
+
+    LaunchedEffect(currentPath, allowedExtensions, nameExclusions) {
         isScanning = true
         withContext(Dispatchers.IO) {
             val result = currentPath.listFiles()
                 ?.filter { it.name != "romulist.xml" && !it.name.startsWith(".") }
                 ?.filter { file ->
+                    // Filter by name exclusions (usually for folders as requested)
+                    if (nameExclusions.any { it.equals(file.name, ignoreCase = true) }) return@filter false
+
                     // Show all directories for speed; only filter files by extension if a config is active
                     file.isDirectory || allowedExtensions.isEmpty() || file.extension.lowercase() in allowedExtensions
                 }
@@ -103,6 +110,13 @@ fun ListFiles(
                         text = "Filtering by: ${allowedExtensions.joinToString(", ")}",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Cyan
+                    )
+                }
+                if (nameExclusions.isNotEmpty()) {
+                    Text(
+                        text = "Excluding: ${nameExclusions.joinToString(", ")}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Red
                     )
                 }
             }

@@ -12,30 +12,38 @@ import java.io.FileInputStream
 
 object EmulatorNavigator {
 
-    data class RomulistConfig(val folders: List<FolderConfig>)
+    data class RomulistConfig(val folders: List<FolderConfig>, val nameExclusions: List<String> = emptyList())
     data class FolderConfig(val name: String, val extensions: List<String>, val intent: IntentConfig?)
     data class IntentConfig(val packageName: String, val packageName32: String?, val className: String, val action: String, val extras: Map<String, String>)
 
     fun parseConfig(file: File): RomulistConfig? {
         try {
             val folders = mutableListOf<FolderConfig>()
+            val exclusions = mutableListOf<String>()
             val parser = Xml.newPullParser()
-            parser.setInput(FileInputStream(file), "UTF-8")
+            val inputStream = FileInputStream(file)
+            parser.setInput(inputStream, "UTF-8")
 
             var eventType = parser.eventType
             var currentFolder: FolderConfig? = null
             var currentIntent: IntentConfig? = null
             var currentExtras = mutableMapOf<String, String>()
+            var inExclusions = false
 
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 val tagName = parser.name
                 when (eventType) {
                     XmlPullParser.START_TAG -> {
                         when (tagName) {
+                            "exclusions" -> inExclusions = true
                             "folder" -> {
-                                val folderName = parser.getAttributeValue(null, "name") ?: ""
-                                val extensions = parser.getAttributeValue(null, "extensions")?.split(",")?.map { it.trim() } ?: emptyList()
-                                currentFolder = FolderConfig(folderName, extensions, null)
+                                val name = parser.getAttributeValue(null, "name")
+                                if (inExclusions) {
+                                    name?.let { exclusions.add(it) }
+                                } else {
+                                    val extensions = parser.getAttributeValue(null, "extensions")?.split(",")?.map { it.trim() } ?: emptyList()
+                                    currentFolder = FolderConfig(name ?: "", extensions, null)
+                                }
                             }
                             "intent" -> {
                                 val pkg = parser.getAttributeValue(null, "packageName") ?: ""
@@ -59,23 +67,30 @@ object EmulatorNavigator {
                     }
                     XmlPullParser.END_TAG -> {
                         when (tagName) {
+                            "exclusions" -> inExclusions = false
                             "intent" -> {
                                 currentIntent = currentIntent?.copy(extras = currentExtras.toMap())
                                 currentFolder = currentFolder?.copy(intent = currentIntent)
                             }
                             "folder" -> {
-                                currentFolder?.let { folders.add(it) }
-                                currentFolder = null
-                                currentIntent = null
+                                if (!inExclusions) {
+                                    currentFolder?.let { folders.add(it) }
+                                    currentFolder = null
+                                    currentIntent = null
+                                }
                             }
                         }
                     }
                 }
-                eventType = parser.next()
+                eventType = try { parser.next() } catch (e: Exception) { 
+                    android.util.Log.e("Romulist", "XML Parse Error in ${file.name}: ${e.message}")
+                    XmlPullParser.END_DOCUMENT 
+                }
             }
-            return RomulistConfig(folders)
+            inputStream.close()
+            return RomulistConfig(folders, exclusions)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("Romulist", "Failed to open/parse config: ${e.message}")
             return null
         }
     }

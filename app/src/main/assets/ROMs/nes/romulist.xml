@@ -7,4 +7,9 @@
 		    <extra name="CONFIGFILE" value="/storage/emulated/0/Android/data/com.retroarch.ra32/files/retroarch.cfg" />
 		  </intent>
 	</folder>
+	<exclusions>
+		<folder name="m" />
+		<folder name="r" />
+		<folder name="u" />
+	</exclusions>
 </romulist>
