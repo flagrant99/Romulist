@@ -1,9 +1,9 @@
 <romulist>
-	<folder name="nes Retroarch core fceumm_libretro_android.so" extensions="zip">
+	<folder name="Atari 2600 Retroarch core stella_libretro_android.so" extensions="a26, zip, bin">
 		  <intent packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$filePath" />
-		    <extra name="LIBRETRO" value="$dataDir/cores/fceumm_libretro_android.so" />
+		    <extra name="LIBRETRO" value="$dataDir/cores/stella_libretro_android.so" />
 		    <extra name="CONFIGFILE" value="/storage/emulated/0/Android/data/com.retroarch.ra32/files/retroarch.cfg" />
 		  </intent>
 	</folder>
