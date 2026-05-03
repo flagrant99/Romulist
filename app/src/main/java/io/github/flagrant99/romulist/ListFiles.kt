@@ -37,9 +37,48 @@ fun ListFiles(
     onPathChange: (File) -> Unit
 ) {
     val context = LocalContext.current
+    var refreshToggle by remember { mutableStateOf(false) }
+
+    // Copy romulist.xml from assets if it matches the structure under favorite path
+    LaunchedEffect(currentPath, favoritePath) {
+        if (favoritePath == null) return@LaunchedEffect
+
+        withContext(Dispatchers.IO) {
+            val favFile = File(favoritePath)
+            val isInsideFavorite = currentPath.absolutePath == favFile.absolutePath ||
+                    currentPath.absolutePath.startsWith(favFile.absolutePath + File.separator)
+
+            if (isInsideFavorite) {
+                val localConfig = File(currentPath, "romulist.xml")
+                if (!localConfig.exists()) {
+                    var relative = currentPath.absolutePath.removePrefix(favFile.absolutePath)
+                    if (relative.startsWith(File.separator)) {
+                        relative = relative.substring(1)
+                    }
+
+                    // Normalize path for assets (always use forward slashes)
+                    val assetSubPath = relative.replace(File.separator, "/")
+                    val assetPath = if (assetSubPath.isEmpty()) "ROMs/romulist.xml" else "ROMs/$assetSubPath/romulist.xml"
+
+                    try {
+                        context.assets.open(assetPath).use { input ->
+                            localConfig.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
+                            refreshToggle = !refreshToggle
+                        }
+                    } catch (_: Exception) {
+                        // No matching config in assets, ignore
+                    }
+                }
+            }
+        }
+    }
 
     // Recursive search for the nearest romulist.xml upward to implement persistence
-    val configResult = remember(currentPath, favoritePath) {
+    val configResult = remember(currentPath, favoritePath, refreshToggle) {
         var dir: File? = currentPath
         val favFile = favoritePath?.let { File(it) }
         var foundConfig: EmulatorNavigator.RomulistConfig? = null
