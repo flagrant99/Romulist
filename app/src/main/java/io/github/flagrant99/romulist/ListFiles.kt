@@ -7,15 +7,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 @Composable
@@ -53,31 +60,34 @@ fun ListFiles(
     val activeConfigPath = configResult.second
 
     val allowedExtensions = remember(romulistConfig) {
-        romulistConfig?.folders?.flatMap { it.extensions }?.map { it.lowercase() } ?: emptyList()
+        romulistConfig?.folders?.flatMap { it.extensions }?.map { it.lowercase() }?.toSet() ?: emptySet()
     }
 
-    val files = remember(currentPath, allowedExtensions) {
-        currentPath.listFiles()
-            ?.filter { it.name != "romulist.xml" }
-            ?.filter { file ->
-                if (allowedExtensions.isEmpty()) true
-                else {
-                    // Show directories only if they contain matching files somewhere inside.
-                    // Show files only if they match the allowed extensions.
-                    file.walkTopDown().any { subFile ->
-                        if (subFile.isDirectory) false
-                        else {
-                            val name = subFile.name.lowercase()
-                            allowedExtensions.any { ext ->
-                                name.endsWith(ext) || name.endsWith(".$ext")
-                            }
-                        }
+    var files by remember(currentPath, allowedExtensions) { mutableStateOf<List<File>>(emptyList()) }
+    var isScanning by remember(currentPath, allowedExtensions) { mutableStateOf(true) }
+
+    LaunchedEffect(currentPath, allowedExtensions) {
+        isScanning = true
+        withContext(Dispatchers.IO) {
+            val result = currentPath.listFiles()
+                ?.filter { it.name != "romulist.xml" && !it.name.startsWith(".") }
+                ?.filter { file ->
+                    if (allowedExtensions.isEmpty()) true
+                    else if (file.isFile) {
+                        file.extension.lowercase() in allowedExtensions
+                    } else {
+                        // Recursive search with limited depth for directories to speed up the check
+                        file.walkTopDown()
+                            .maxDepth(3)
+                            .any { it.isFile && it.extension.lowercase() in allowedExtensions }
                     }
                 }
-            }
-            ?.sortedWith(
-                compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
-            ) ?: emptyList()
+                ?.sortedWith(
+                    compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
+                ) ?: emptyList()
+            files = result
+            isScanning = false
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -105,7 +115,16 @@ fun ListFiles(
             }
         }
 
-        if (files.isEmpty()) {
+        if (isScanning) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.Green)
+            }
+        } else if (files.isEmpty()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
