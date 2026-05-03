@@ -56,9 +56,12 @@ fun ListFiles(
                         relative = relative.substring(1)
                     }
 
+                    // Skip if we are at the favorite root; configs are in system sub-directories
+                    if (relative.isEmpty()) return@withContext
+
                     // Normalize path for assets (always use forward slashes)
                     val assetSubPath = relative.replace(File.separator, "/")
-                    val assetPath = if (assetSubPath.isEmpty()) "ROMs/romulist.xml" else "ROMs/$assetSubPath/romulist.xml"
+                    val assetPath = "ROMs/$assetSubPath/romulist.xml"
 
                     try {
                         context.assets.open(assetPath).use { input ->
