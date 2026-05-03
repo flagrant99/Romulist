@@ -159,7 +159,6 @@ fun ListFiles(
                                 if (file.absolutePath.startsWith(fav)) {
                                     EmulatorNavigator.launchGame(
                                         context = context,
-                                        favoritePath = favoritePath,
                                         filePath = file.absolutePath,
                                         config = romulistConfig
                                     )

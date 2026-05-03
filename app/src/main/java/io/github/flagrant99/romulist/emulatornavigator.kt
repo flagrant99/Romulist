@@ -14,7 +14,14 @@ object EmulatorNavigator {
 
     data class RomulistConfig(val folders: List<FolderConfig>, val nameExclusions: List<String> = emptyList())
     data class FolderConfig(val name: String, val extensions: List<String>, val intent: IntentConfig?)
-    data class IntentConfig(val packageName: String, val packageName32: String?, val className: String, val action: String, val extras: Map<String, String>)
+    data class IntentConfig(
+        val packageName: String,
+        val packageName32: String?,
+        val className: String?,
+        val action: String,
+        val data: String?,
+        val extras: Map<String, String>
+    )
 
     fun parseConfig(file: File): RomulistConfig? {
         try {
@@ -48,8 +55,9 @@ object EmulatorNavigator {
                             "intent" -> {
                                 val pkg = parser.getAttributeValue(null, "packageName") ?: ""
                                 val pkg32 = parser.getAttributeValue(null, "packageName32")
-                                val cls = parser.getAttributeValue(null, "className") ?: ""
-                                currentIntent = IntentConfig(pkg, pkg32, cls, "", emptyMap())
+                                val cls = parser.getAttributeValue(null, "className")
+                                val dataAttr = parser.getAttributeValue(null, "data")
+                                currentIntent = IntentConfig(pkg, pkg32, cls, "", dataAttr, emptyMap())
                                 currentExtras = mutableMapOf()
                             }
                             "action" -> {
@@ -95,75 +103,24 @@ object EmulatorNavigator {
         }
     }
 
-    enum class EmulatorType {
-        DOLPHIN, CITRA, RETROARCH, PPSSPP, AZAHAR_VANILLA
-    }
-
-    fun launchGame(context: Context, favoritePath: String?, filePath: String, config: RomulistConfig? = null)
-    {
-        if (config != null) {
-            val folderCfg = config.folders.find { f ->
-                f.extensions.any { ext -> filePath.lowercase().endsWith(ext.lowercase()) }
-            }
-            if (folderCfg?.intent != null) {
-                val intentCfg = folderCfg.intent
-                val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
-                val packageName = if (is64Bit) intentCfg.packageName else (intentCfg.packageName32 ?: intentCfg.packageName)
-
-                if (!isAppInstalled(context, packageName)) {
-                    Toast.makeText(context, "Emulator not installed: $packageName", Toast.LENGTH_SHORT).show()
-                    return
-                }
-
-                val intent = Intent().apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    setClassName(packageName, intentCfg.className)
-                    action = intentCfg.action
-
-                    val appInfo = context.packageManager.getApplicationInfo(packageName, 0)
-                    val dataDir = appInfo.dataDir
-
-                    intentCfg.extras.forEach { (k, v) ->
-                        val resolvedValue = v.replace("\$dataDir", dataDir)
-                            .replace("/path/to/game.nes", filePath) // For user's specific example
-                            .replace("\$filePath", filePath)
-                        putExtra(k, resolvedValue)
-                    }
-                }
-                try {
-                    context.startActivity(intent)
-                    return
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Error launching custom emulator from XML", Toast.LENGTH_SHORT).show()
-                }
-            }
+    fun launchGame(context: Context, filePath: String, config: RomulistConfig? = null) {
+        if (config == null) {
+            Toast.makeText(context, "No configuration found for this folder", Toast.LENGTH_SHORT).show()
+            return
         }
 
-        val gamePath = favoritePath?.let { filePath.removePrefix(it).removePrefix("/") } ?: filePath
-        val lGamePath = gamePath.lowercase()
-        var type = EmulatorType.RETROARCH
-
-        if (lGamePath.startsWith("3ds")) {
-            type = EmulatorType.CITRA
+        val folderCfg = config.folders.find { f ->
+            f.extensions.any { ext -> filePath.lowercase().endsWith(ext.lowercase()) }
         }
 
-        if (lGamePath.startsWith("gamecube")) {
-            type = EmulatorType.DOLPHIN
+        if (folderCfg?.intent == null) {
+            Toast.makeText(context, "No intent configuration found for this file type", Toast.LENGTH_SHORT).show()
+            return
         }
 
-        if (lGamePath.startsWith("wii")) {
-            type = EmulatorType.DOLPHIN
-        }
-
-
-        val packageName = when (type) {
-            EmulatorType.DOLPHIN -> "org.dolphinemu.dolphinemu"
-            EmulatorType.CITRA -> "org.citra.citra_emu"
-            EmulatorType.PPSSPP -> "org.ppsspp.ppsspp"
-            EmulatorType.RETROARCH -> "com.retroarch.ra32"
-            EmulatorType.AZAHAR_VANILLA -> "org.azahar_emu.Azahar"
-
-        }
+        val intentCfg = folderCfg.intent
+        val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
+        val packageName = if (is64Bit) intentCfg.packageName else (intentCfg.packageName32 ?: intentCfg.packageName)
 
         if (!isAppInstalled(context, packageName)) {
             Toast.makeText(context, "Emulator not installed: $packageName", Toast.LENGTH_SHORT).show()
@@ -172,51 +129,36 @@ object EmulatorNavigator {
 
         val intent = Intent().apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-            when (type)
-            {
-                EmulatorType.DOLPHIN -> {
-                    setClassName(packageName, "org.dolphinemu.dolphinemu.ui.main.MainActivity")
-                    action = Intent.ACTION_VIEW
-                    putExtra("AutoStartFile", filePath)
-                }
-                EmulatorType.CITRA -> {
-                    setClassName(packageName, "org.citra.citra_emu.ui.main.MainActivity")
-                    action = Intent.ACTION_VIEW
-                    putExtra("AutoStartFile", filePath)
-                }
-                EmulatorType.PPSSPP -> {
-                    setClassName(packageName, "org.ppsspp.ppsspp.PpssppActivity")
-                    action = Intent.ACTION_VIEW
-                    data = Uri.parse(filePath)
-                }
-                EmulatorType.RETROARCH -> {
-                    setClassName(packageName, "com.retroarch.browser.retroactivity.RetroActivityFuture")
-                    putExtra("ROM", filePath)
-                    val appInfo = context.packageManager.getApplicationInfo(packageName, 0)
-                    val dataDir = appInfo.dataDir
-                    putExtra("LIBRETRO", "$dataDir/cores/fceumm_libretro_android.so")
-                    putExtra("CONFIGFILE", "/storage/emulated/0/Android/data/$packageName/files/retroarch.cfg")
-                    putExtra("EXTERNAL", "/storage/emulated/0/Android/data/$packageName/files")
-                    putExtra("DATADIR", dataDir)
-                    putExtra("SDCARD", "/storage/emulated/0")
-                }
-                EmulatorType.AZAHAR_VANILLA -> {
-                    // Logic for AZAHAR_VANILLA can be added here
-                    setPackage(packageName)
-                    action = Intent.ACTION_VIEW
-                    data = Uri.parse(filePath)
-                }
+            
+            if (!intentCfg.className.isNullOrBlank()) {
+                setClassName(packageName, intentCfg.className)
+            } else {
+                setPackage(packageName)
             }
-        }//end of val intent = Intent().apply {
+            
+            action = if (intentCfg.action.isNotEmpty()) intentCfg.action else Intent.ACTION_VIEW
 
+            val appInfo = context.packageManager.getApplicationInfo(packageName, 0)
+            val dataDir = appInfo.dataDir
+
+            intentCfg.data?.let {
+                val resolvedData = it.replace("\$dataDir", dataDir)
+                    .replace("\$filePath", filePath)
+                data = Uri.parse(resolvedData)
+            }
+
+            intentCfg.extras.forEach { (k, v) ->
+                val resolvedValue = v.replace("\$dataDir", dataDir)
+                    .replace("\$filePath", filePath)
+                putExtra(k, resolvedValue)
+            }
+        }
 
         try {
             context.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(context, "Error launching emulator", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Error launching emulator: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-        return;
     }
 
     private fun isAppInstalled(context: Context, packageName: String): Boolean {
