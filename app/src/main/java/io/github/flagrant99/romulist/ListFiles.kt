@@ -60,7 +60,7 @@ fun ListFiles(
     val activeConfigPath = configResult.second
 
     val allowedExtensions = remember(romulistConfig) {
-        romulistConfig?.folders?.flatMap { it.extensions }?.map { it.lowercase() }?.toSet() ?: emptySet()
+        romulistConfig?.systemConfig?.extensions?.map { it.lowercase() }?.toSet() ?: emptySet()
     }
 
     val nameExclusions = remember(romulistConfig) {

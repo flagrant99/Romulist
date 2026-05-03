@@ -12,8 +12,17 @@ import java.io.FileInputStream
 
 object EmulatorNavigator {
 
-    data class RomulistConfig(val folders: List<FolderConfig>, val nameExclusions: List<String> = emptyList())
-    data class FolderConfig(val name: String, val extensions: List<String>, val intent: IntentConfig?)
+    data class RomulistConfig(
+        val systemConfig: FolderConfig?, 
+        val nameExclusions: List<String> = emptyList()
+    )
+    
+    data class FolderConfig(
+        val name: String, 
+        val extensions: List<String>, 
+        val intent: IntentConfig?
+    )
+    
     data class IntentConfig(
         val packageName: String,
         val packageName32: String?,
@@ -25,7 +34,7 @@ object EmulatorNavigator {
 
     fun parseConfig(file: File): RomulistConfig? {
         try {
-            val folders = mutableListOf<FolderConfig>()
+            var systemConfig: FolderConfig? = null
             val exclusions = mutableListOf<String>()
             val parser = Xml.newPullParser()
             val inputStream = FileInputStream(file)
@@ -37,6 +46,9 @@ object EmulatorNavigator {
             var currentExtras = mutableMapOf<String, String>()
             var inExclusions = false
 
+            // Determine the system name from the parent directory (e.g., "nes" from Roms/nes/romulist.xml)
+            val systemName = file.parentFile?.name ?: "Unknown"
+
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 val tagName = parser.name
                 when (eventType) {
@@ -44,12 +56,13 @@ object EmulatorNavigator {
                         when (tagName) {
                             "exclusions" -> inExclusions = true
                             "folder" -> {
-                                val name = parser.getAttributeValue(null, "name")
+                                val nameAttr = parser.getAttributeValue(null, "name")
                                 if (inExclusions) {
-                                    name?.let { exclusions.add(it) }
+                                    nameAttr?.let { exclusions.add(it) }
                                 } else {
                                     val extensions = parser.getAttributeValue(null, "extensions")?.split(",")?.map { it.trim() } ?: emptyList()
-                                    currentFolder = FolderConfig(name ?: "", extensions, null)
+                                    // Use directory name if 'name' attribute is missing
+                                    currentFolder = FolderConfig(nameAttr ?: systemName, extensions, null)
                                 }
                             }
                             "intent" -> {
@@ -82,7 +95,7 @@ object EmulatorNavigator {
                             }
                             "folder" -> {
                                 if (!inExclusions) {
-                                    currentFolder?.let { folders.add(it) }
+                                    systemConfig = currentFolder
                                     currentFolder = null
                                     currentIntent = null
                                 }
@@ -96,7 +109,7 @@ object EmulatorNavigator {
                 }
             }
             inputStream.close()
-            return RomulistConfig(folders, exclusions)
+            return RomulistConfig(systemConfig, exclusions)
         } catch (e: Exception) {
             android.util.Log.e("Romulist", "Failed to open/parse config: ${e.message}")
             return null
@@ -104,21 +117,20 @@ object EmulatorNavigator {
     }
 
     fun launchGame(context: Context, filePath: String, config: RomulistConfig? = null) {
-        if (config == null) {
-            Toast.makeText(context, "No configuration found for this folder", Toast.LENGTH_SHORT).show()
+        val systemCfg = config?.systemConfig
+        if (systemCfg?.intent == null) {
+            Toast.makeText(context, "No emulator configuration found", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val folderCfg = config.folders.find { f ->
-            f.extensions.any { ext -> filePath.lowercase().endsWith(ext.lowercase()) }
-        }
-
-        if (folderCfg?.intent == null) {
-            Toast.makeText(context, "No intent configuration found for this file type", Toast.LENGTH_SHORT).show()
+        // Optional: Check if extension matches before launching
+        val ext = File(filePath).extension.lowercase()
+        if (systemCfg.extensions.isNotEmpty() && !systemCfg.extensions.any { it.lowercase() == ext }) {
+            Toast.makeText(context, "Unsupported file extension: $ext", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val intentCfg = folderCfg.intent
+        val intentCfg = systemCfg.intent
         val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
         val packageName = if (is64Bit) intentCfg.packageName else (intentCfg.packageName32 ?: intentCfg.packageName)
 
