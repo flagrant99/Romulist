@@ -72,15 +72,8 @@ fun ListFiles(
             val result = currentPath.listFiles()
                 ?.filter { it.name != "romulist.xml" && !it.name.startsWith(".") }
                 ?.filter { file ->
-                    if (allowedExtensions.isEmpty()) true
-                    else if (file.isFile) {
-                        file.extension.lowercase() in allowedExtensions
-                    } else {
-                        // Recursive search with limited depth for directories to speed up the check
-                        file.walkTopDown()
-                            .maxDepth(3)
-                            .any { it.isFile && it.extension.lowercase() in allowedExtensions }
-                    }
+                    // Show all directories for speed; only filter files by extension if a config is active
+                    file.isDirectory || allowedExtensions.isEmpty() || file.extension.lowercase() in allowedExtensions
                 }
                 ?.sortedWith(
                     compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
