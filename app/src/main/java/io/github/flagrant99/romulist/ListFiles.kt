@@ -25,14 +25,51 @@ fun ListFiles(
     onPathChange: (File) -> Unit
 ) {
     val context = LocalContext.current
-    val romulistConfig = remember(currentPath) {
-        File(currentPath, "romulist.xml").let { file ->
-            if (file.exists()) EmulatorNavigator.parseConfig(file) else null
+
+    // Recursive search for the nearest romulist.xml upward to implement persistence
+    val configResult = remember(currentPath, favoritePath) {
+        var dir: File? = currentPath
+        val favFile = favoritePath?.let { File(it) }
+        var foundConfig: EmulatorNavigator.RomulistConfig? = null
+        var configSource: String? = null
+
+        while (dir != null) {
+            val configFile = File(dir, "romulist.xml")
+            if (configFile.exists()) {
+                foundConfig = EmulatorNavigator.parseConfig(configFile)
+                if (foundConfig != null) {
+                    configSource = configFile.absolutePath
+                    break
+                }
+            }
+            // Stop searching if we reach the favorite path root to avoid leaking config outside the intended tree
+            if (favFile != null && dir.absolutePath == favFile.absolutePath) break
+            dir = dir.parentFile
         }
+        foundConfig to configSource
     }
-    val files = remember(currentPath) {
+
+    val romulistConfig = configResult.first
+    val activeConfigPath = configResult.second
+
+    val allowedExtensions = remember(romulistConfig) {
+        romulistConfig?.folders?.flatMap { it.extensions }?.map { it.lowercase() } ?: emptyList()
+    }
+
+    val files = remember(currentPath, allowedExtensions) {
         currentPath.listFiles()
             ?.filter { it.name != "romulist.xml" }
+            ?.filter { file ->
+                // Always show directories to allow navigation; filter files by extension if config exists
+                if (file.isDirectory) true
+                else if (allowedExtensions.isEmpty()) true
+                else {
+                    val name = file.name.lowercase()
+                    allowedExtensions.any { ext ->
+                        name.endsWith(ext) || name.endsWith(".$ext")
+                    }
+                }
+            }
             ?.sortedWith(
                 compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
             ) ?: emptyList()
@@ -46,13 +83,21 @@ fun ListFiles(
             color = Color.Gray
         )
 
-        if (romulistConfig != null) {
-            Text(
-                text = "Configuration loaded: romulist.xml",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Green
-            )
+        if (activeConfigPath != null) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                Text(
+                    text = "Config active from: $activeConfigPath",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Green
+                )
+                if (allowedExtensions.isNotEmpty()) {
+                    Text(
+                        text = "Filtering by: ${allowedExtensions.joinToString(", ")}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Cyan
+                    )
+                }
+            }
         }
 
         if (files.isEmpty()) {
