@@ -15,14 +15,38 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
+import android.view.KeyEvent
 import io.github.flagrant99.romulist.ui.theme.Purple80
 
 @Composable
-fun FileRow(name: String, isDirectory: Boolean, onClick: () -> Unit) {
+fun FileRow(
+    name: String,
+    isDirectory: Boolean,
+    onBack: () -> Unit,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyUp) {
+                    when (keyEvent.nativeKeyEvent.keyCode) {
+                        KeyEvent.KEYCODE_BUTTON_B -> {
+                            onClick()
+                            true
+                        }
+                        KeyEvent.KEYCODE_BUTTON_A -> {
+                            onBack()
+                            true
+                        }
+                        else -> false
+                    }
+                } else false
+            }
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically

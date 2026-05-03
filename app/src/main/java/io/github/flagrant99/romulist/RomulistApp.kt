@@ -24,6 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import android.view.KeyEvent
 import io.github.flagrant99.romulist.ui.theme.RomulistTheme
 import java.io.File
 
@@ -61,8 +65,34 @@ fun RomulistApp()
             mutableStateOf(sharedPrefs.getString("favorite_folder", null))
         }
 
+        val handleBack = {
+            val parent = selectedFolder?.parentFile
+
+            when {
+                // 1. If we are in a subfolder, go to parent
+                parent != null && selectedFolder?.absolutePath != volumes.find { it.directory?.absolutePath == selectedFolder?.absolutePath }?.directory?.absolutePath -> {
+                    selectedFolder = parent
+                }
+                // 2. If we are at the root of a drive, go back to Drive List
+                selectedFolder != null -> {
+                    selectedFolder = null
+                }
+                // 3. Otherwise, just make sure we are on the Home tab
+                else -> {
+                    currentScreen = AppDestinations.HOME
+                }
+            }
+        }
+
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .onKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_A) {
+                        handleBack()
+                        true
+                    } else false
+                },
             bottomBar = {
                 NavigationBar {
                     AppDestinations.entries.forEach { destination ->
@@ -82,22 +112,7 @@ fun RomulistApp()
                             ),
                             onClick = {
                                 if (destination == AppDestinations.BACK) {
-                                    val parent = selectedFolder?.parentFile
-
-                                    when {
-                                        // 1. If we are in a subfolder, go to parent
-                                        parent != null && selectedFolder?.absolutePath != volumes.find { it.directory?.absolutePath == selectedFolder?.absolutePath }?.directory?.absolutePath -> {
-                                            selectedFolder = parent
-                                        }
-                                        // 2. If we are at the root of a drive, go back to Drive List
-                                        selectedFolder != null -> {
-                                            selectedFolder = null
-                                        }
-                                        // 3. Otherwise, just make sure we are on the Home tab
-                                        else -> {
-                                            currentScreen = AppDestinations.HOME
-                                        }
-                                    }
+                                    handleBack()
                                 } else {
                                     // Navigate to favorite folder if HOME is clicked and favorite is set
                                     if (destination == AppDestinations.HOME) {
@@ -128,7 +143,8 @@ fun RomulistApp()
                             ListFiles(
                                 currentPath = selectedFolder!!,
                                 favoritePath = favoriteFolder,
-                                onPathChange = { selectedFolder = it }
+                                onPathChange = { selectedFolder = it },
+                                onBack = handleBack
                             )
                         } else {
                             RootScreen(
@@ -136,7 +152,8 @@ fun RomulistApp()
                                 storageManager = storageManager,
                                 storageStatsManager = storageStatsManager,
                                 context = context,
-                                onVolumeClick = { folder -> selectedFolder = folder }
+                                onVolumeClick = { folder -> selectedFolder = folder },
+                                onBack = handleBack
                             )
                         }
                     }

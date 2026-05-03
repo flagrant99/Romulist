@@ -19,8 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import android.view.KeyEvent
 import java.io.File
 
 @Composable
@@ -30,6 +34,7 @@ fun RootScreen(
     storageStatsManager: StorageStatsManager?,
     context: Context,
     onVolumeClick: (File) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier)
@@ -99,6 +104,21 @@ fun RootScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .onKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                KeyEvent.KEYCODE_BUTTON_B -> {
+                                    onVolumeClick(volume.directory ?: File("/"))
+                                    true
+                                }
+                                KeyEvent.KEYCODE_BUTTON_A -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
                     .clickable {
                         onVolumeClick(volume.directory ?: File("/"))
                     }

@@ -34,7 +34,8 @@ import java.io.File
 fun ListFiles(
     currentPath: File,
     favoritePath: String?,
-    onPathChange: (File) -> Unit
+    onPathChange: (File) -> Unit,
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
     var refreshToggle by remember { mutableStateOf(false) }
@@ -188,7 +189,8 @@ fun ListFiles(
                 items(files) { file ->
                     FileRow(
                         name = file.name,
-                        isDirectory = file.isDirectory
+                        isDirectory = file.isDirectory,
+                        onBack = onBack
                     ) {
                         if (file.isDirectory) {
                             onPathChange(file)
