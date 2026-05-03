@@ -154,9 +154,7 @@ object EmulatorNavigator {
             val dataDir = appInfo.dataDir
 
             intentCfg.data?.let {
-                val resolvedData = it.replace("\$DATA_DIR", dataDir)
-                    .replace("\$FILE_PATH", filePath)
-                data = Uri.parse(resolvedData)
+                data = Uri.parse(it)
             }
 
             intentCfg.extras.forEach { (k, v) ->
