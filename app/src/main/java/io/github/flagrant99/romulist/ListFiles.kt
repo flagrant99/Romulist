@@ -60,13 +60,18 @@ fun ListFiles(
         currentPath.listFiles()
             ?.filter { it.name != "romulist.xml" }
             ?.filter { file ->
-                // Always show directories to allow navigation; filter files by extension if config exists
-                if (file.isDirectory) true
-                else if (allowedExtensions.isEmpty()) true
+                if (allowedExtensions.isEmpty()) true
                 else {
-                    val name = file.name.lowercase()
-                    allowedExtensions.any { ext ->
-                        name.endsWith(ext) || name.endsWith(".$ext")
+                    // Show directories only if they contain matching files somewhere inside.
+                    // Show files only if they match the allowed extensions.
+                    file.walkTopDown().any { subFile ->
+                        if (subFile.isDirectory) false
+                        else {
+                            val name = subFile.name.lowercase()
+                            allowedExtensions.any { ext ->
+                                name.endsWith(ext) || name.endsWith(".$ext")
+                            }
+                        }
                     }
                 }
             }

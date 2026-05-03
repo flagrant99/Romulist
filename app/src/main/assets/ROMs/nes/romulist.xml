@@ -4,6 +4,7 @@
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="/path/to/game.nes" />
 		    <extra name="LIBRETRO" value="$dataDir/cores/fceumm_libretro_android.so" />
+		    <extra name="CONFIGFILE" value="/storage/emulated/0/Android/data/com.retroarch.ra32/files/retroarch.cfg" />
 		  </intent>
 	</folder>
 </romulist>
