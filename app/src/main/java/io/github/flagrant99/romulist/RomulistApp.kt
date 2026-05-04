@@ -176,7 +176,6 @@ fun RomulistApp()
                         } else {
                             RootScreen(
                                 volumes = volumes,
-                                storageManager = storageManager,
                                 storageStatsManager = storageStatsManager,
                                 context = context,
                                 onVolumeClick = { folder -> selectedFolder = folder },

@@ -2,6 +2,7 @@ package io.github.flagrant99.romulist
 
 import android.app.usage.StorageStatsManager
 import android.content.Context
+import android.os.StatFs
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.text.format.Formatter
@@ -40,7 +41,6 @@ import java.io.File
 @Composable
 fun RootScreen(
     volumes: List<StorageVolume>,
-    storageManager: StorageManager?,
     storageStatsManager: StorageStatsManager?,
     context: Context,
     onVolumeClick: (File) -> Unit,
@@ -62,7 +62,7 @@ fun RootScreen(
                 val osVersion = android.os.Build.VERSION.RELEASE
                 val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
                 val arch = if (is64Bit) "64-bit" else "32-bit"
-                val deviceName = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
+                val deviceName = "${android.os.Build.MODEL}"
 
                 Text(
                     text = "SYSTEM INFO",
@@ -96,31 +96,28 @@ fun RootScreen(
 
         itemsIndexed(volumes) { index, volume ->
             var isFocused by remember { mutableStateOf(false) }
-            val uuid = try
-            {
-                if (volume.isPrimary)
-                {
-                    StorageManager.UUID_DEFAULT
-                }
-                else
-                {
-                    volume.directory?.let { storageManager?.getUuidForPath(it) }
-                        ?: StorageManager.UUID_DEFAULT
-                }
-            } catch (e: Exception)
-            {
-                StorageManager.UUID_DEFAULT
-            }
 
             var totalStr = "Unknown"
             var freeStr = "Unknown"
             try
             {
-                storageStatsManager?.let { manager ->
-                    val totalBytes = manager.getTotalBytes(uuid)
-                    val freeBytes = manager.getFreeBytes(uuid)
+                val dir = volume.directory
+                if (dir != null)
+                {
+                    val stat = StatFs(dir.absolutePath)
+                    val totalBytes = stat.blockCountLong * stat.blockSizeLong
+                    val freeBytes = stat.availableBlocksLong * stat.blockSizeLong
                     totalStr = Formatter.formatFileSize(context, totalBytes)
                     freeStr = Formatter.formatFileSize(context, freeBytes)
+                }
+                else if (volume.isPrimary)
+                {
+                    storageStatsManager?.let { manager ->
+                        val totalBytes = manager.getTotalBytes(StorageManager.UUID_DEFAULT)
+                        val freeBytes = manager.getFreeBytes(StorageManager.UUID_DEFAULT)
+                        totalStr = Formatter.formatFileSize(context, totalBytes)
+                        freeStr = Formatter.formatFileSize(context, freeBytes)
+                    }
                 }
             } catch (e: Exception)
             {
