@@ -11,5 +11,6 @@
 		<folder name="m" />
 		<folder name="r" />
 		<folder name="u" />
+		<folder name="mame2003" />
 	</exclusions>
 </romulist>
