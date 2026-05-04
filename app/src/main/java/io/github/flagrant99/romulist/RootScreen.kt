@@ -62,6 +62,7 @@ fun RootScreen(
                 val osVersion = android.os.Build.VERSION.RELEASE
                 val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
                 val arch = if (is64Bit) "64-bit" else "32-bit"
+                val deviceName = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
 
                 Text(
                     text = "SYSTEM INFO",
@@ -78,6 +79,11 @@ fun RootScreen(
                 )
                 Text(
                     text = "Architecture: $arch",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Device: $deviceName",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )

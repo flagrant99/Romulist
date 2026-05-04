@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="Sega CD" extensions="zip">
+	<folder name="Sega CD" extensions="chd">
 		  <intent packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$FILE_PATH" />
