@@ -3,6 +3,7 @@ package io.github.flagrant99.romulist
 import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.os.storage.StorageManager
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -77,11 +78,21 @@ fun RomulistApp()
                 selectedFolder != null -> {
                     selectedFolder = null
                 }
-                // 3. Otherwise, just make sure we are on the Home tab
-                else -> {
+                // 3. If we are on a different tab, go back to Home
+                currentScreen != AppDestinations.HOME -> {
                     currentScreen = AppDestinations.HOME
                 }
+                // 4. At the top of Home (RootScreen), disable back navigation
+                else -> {
+                    // Do nothing
+                }
             }
+        }
+
+        val canGoBack = selectedFolder != null || currentScreen != AppDestinations.HOME
+
+        BackHandler(enabled = true) {
+            handleBack()
         }
 
         val handleHome = {
@@ -96,7 +107,9 @@ fun RomulistApp()
                     if (keyEvent.type == KeyEventType.KeyUp) {
                         when (keyEvent.nativeKeyEvent.keyCode) {
                             KeyEvent.KEYCODE_BUTTON_A -> {
-                                handleBack()
+                                if (canGoBack) {
+                                    handleBack()
+                                }
                                 true
                             }
                             KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y -> {
@@ -117,12 +130,15 @@ fun RomulistApp()
 
                         NavigationBarItem(
                             selected = isSelected,
+                            enabled = if (destination == AppDestinations.BACK) canGoBack else true,
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.Black,
                                 selectedTextColor = Color.Green,
                                 unselectedIconColor = Color.Green,
                                 unselectedTextColor = Color.Green,
-                                indicatorColor = Color.Green
+                                indicatorColor = Color.Green,
+                                disabledIconColor = Color.Gray,
+                                disabledTextColor = Color.Gray
                             ),
                             onClick = {
                                 if (destination == AppDestinations.BACK) {
