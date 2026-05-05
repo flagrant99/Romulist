@@ -84,5 +84,8 @@ fun SetHomeFolder(
                     .padding(12.dp)
             )
         }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 32.dp), color = Color.DarkGray)
+
     }
 }
