@@ -28,7 +28,7 @@ fun MakeFavorite(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Set Favorite Folder",
+            text = "Set Home Folder",
             style = MaterialTheme.typography.headlineSmall,
             color = Color.Green,
             modifier = Modifier.padding(bottom = 32.dp)
@@ -50,7 +50,7 @@ fun MakeFavorite(
         // Set Button
         if (currentFolder != null) {
             Text(
-                text = "[ SET AS FAVORITE ]",
+                text = "[ SET AS HOME ]",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Yellow,
                 modifier = Modifier
@@ -63,7 +63,7 @@ fun MakeFavorite(
 
         // Display Saved Favorite
         Text(
-            text = "Saved Favorite:",
+            text = "Saved Home Folder:",
             style = MaterialTheme.typography.labelMedium,
             color = Color.Gray
         )
@@ -76,7 +76,7 @@ fun MakeFavorite(
 
         if (favoritePath != null) {
             Text(
-                text = "[ CLEAR FAVORITE ]",
+                text = "[ CLEAR HOME FOLDER ]",
                 style = MaterialTheme.typography.titleSmall,
                 color = Color.Red,
                 modifier = Modifier
