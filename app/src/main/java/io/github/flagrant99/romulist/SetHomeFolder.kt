@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import java.io.File
 
 @Composable
-fun MakeFavorite(
+fun SetHomeFolder(
     currentFolder: File?,
     favoritePath: String?,
     onSetFavorite: (String?) -> Unit
