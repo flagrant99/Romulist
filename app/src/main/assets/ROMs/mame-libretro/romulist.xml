@@ -6,6 +6,14 @@
 		    <extra name="LIBRETRO" value="$DATA_DIR/cores/mame2003_libretro_android.so" />
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
+		  <alt_intents>
+		    <intent name="mame2003_plus" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/mame2003_plus_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		 </alt_intents>
 	</folder>
 	<exclusions>
 		<folder name="m" />

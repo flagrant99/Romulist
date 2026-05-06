@@ -6,6 +6,20 @@
 		    <extra name="LIBRETRO" value="$DATA_DIR/cores/fceumm_libretro_android.so" />
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
+		  <alt_intents>
+		    <intent name="mesen" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/mesen_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		    <intent name="nestopia" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/nestopia_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		 </alt_intents>
 	</folder>
 	<exclusions>
 		<folder name="m" />
