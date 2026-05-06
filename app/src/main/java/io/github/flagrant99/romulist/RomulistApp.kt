@@ -184,7 +184,7 @@ fun RomulistApp()
                         }
                     }
 
-                    AppDestinations.FAVORITE -> SetHomeFolder(
+                    AppDestinations.SETTINGS -> SetHomeFolder(
                         currentFolder = selectedFolder,
                         favoritePath = favoriteFolder,
                         onSetFavorite = { path ->

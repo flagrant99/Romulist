@@ -7,5 +7,5 @@ enum class AppDestinations(
 {
     BACK("Back", R.drawable.baseline_arrow_back_24),
     HOME("Home", R.drawable.outline_castle_24),
-    FAVORITE("Settings", R.drawable.outline_settings_24);
+    SETTINGS("Settings", R.drawable.outline_settings_24);
 }
