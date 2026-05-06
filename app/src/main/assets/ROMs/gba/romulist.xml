@@ -1,6 +1,6 @@
 <romulist>
 	<folder name="Game Boy Advanced" extensions="zip">
-		  <intent packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		  <intent name="mgba" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$FILE_PATH" />
 		    <extra name="LIBRETRO" value="$DATA_DIR/cores/mgba_libretro_android.so" />
