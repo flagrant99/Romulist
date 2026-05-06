@@ -108,6 +108,16 @@ fun ListFiles(
 
     val romulistConfig = configResult.first
 
+    val sharedPrefs = remember { context.getSharedPreferences("RomulistPrefs", android.content.Context.MODE_PRIVATE) }
+    val system = romulistConfig?.systemConfig
+    val preferredIntent = remember(system, refreshToggle) {
+        if (system == null) return@remember null
+        val prefKey = "preferred_intent_${system.name}"
+        val name = sharedPrefs.getString(prefKey, system.mainIntent?.name)
+        val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
+        allIntents.find { it.name == name } ?: system.mainIntent
+    }
+
     val allowedExtensions = remember(romulistConfig) {
         romulistConfig?.systemConfig?.extensions?.map { it.lowercase() }?.toSet() ?: emptySet()
     }
@@ -220,7 +230,8 @@ fun ListFiles(
                                     EmulatorNavigator.launchGame(
                                         context = context,
                                         filePath = file.absolutePath,
-                                        config = romulistConfig
+                                        config = romulistConfig,
+                                        preferredIntent = preferredIntent
                                     )
                                 }
                             }

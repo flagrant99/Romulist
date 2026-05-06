@@ -20,10 +20,12 @@ object EmulatorNavigator {
     data class FolderConfig(
         val name: String, 
         val extensions: List<String>, 
-        val intent: IntentConfig?
+        val mainIntent: IntentConfig?,
+        val altIntents: List<IntentConfig> = emptyList()
     )
     
     data class IntentConfig(
+        val name: String,
         val packageName: String,
         val packageName32: String?,
         val className: String?,
@@ -45,6 +47,8 @@ object EmulatorNavigator {
             var currentIntent: IntentConfig? = null
             var currentExtras = mutableMapOf<String, String>()
             var inExclusions = false
+            var inAltIntents = false
+            val altIntents = mutableListOf<IntentConfig>()
 
             // Determine the system name from the parent directory (e.g., "nes" from Roms/nes/romulist.xml)
             val systemName = file.parentFile?.name ?: "Unknown"
@@ -55,6 +59,7 @@ object EmulatorNavigator {
                     XmlPullParser.START_TAG -> {
                         when (tagName) {
                             "exclusions" -> inExclusions = true
+                            "alt_intents" -> inAltIntents = true
                             "folder" -> {
                                 val nameAttr = parser.getAttributeValue(null, "name")
                                 if (inExclusions) {
@@ -66,11 +71,12 @@ object EmulatorNavigator {
                                 }
                             }
                             "intent" -> {
+                                val name = parser.getAttributeValue(null, "name") ?: ""
                                 val pkg = parser.getAttributeValue(null, "packageName") ?: ""
                                 val pkg32 = parser.getAttributeValue(null, "packageName32")
                                 val cls = parser.getAttributeValue(null, "className")
                                 val dataAttr = parser.getAttributeValue(null, "data")
-                                currentIntent = IntentConfig(pkg, pkg32, cls, "", dataAttr, emptyMap())
+                                currentIntent = IntentConfig(name, pkg, pkg32, cls, "", dataAttr, emptyMap())
                                 currentExtras = mutableMapOf()
                             }
                             "action" -> {
@@ -89,15 +95,21 @@ object EmulatorNavigator {
                     XmlPullParser.END_TAG -> {
                         when (tagName) {
                             "exclusions" -> inExclusions = false
+                            "alt_intents" -> inAltIntents = false
                             "intent" -> {
                                 currentIntent = currentIntent?.copy(extras = currentExtras.toMap())
-                                currentFolder = currentFolder?.copy(intent = currentIntent)
+                                if (inAltIntents) {
+                                    currentIntent?.let { altIntents.add(it) }
+                                } else {
+                                    currentFolder = currentFolder?.copy(mainIntent = currentIntent)
+                                }
                             }
                             "folder" -> {
                                 if (!inExclusions) {
-                                    systemConfig = currentFolder
+                                    systemConfig = currentFolder?.copy(altIntents = altIntents.toList())
                                     currentFolder = null
                                     currentIntent = null
+                                    altIntents.clear()
                                 }
                             }
                         }
@@ -116,21 +128,14 @@ object EmulatorNavigator {
         }
     }
 
-    fun launchGame(context: Context, filePath: String, config: RomulistConfig? = null) {
+    fun launchGame(context: Context, filePath: String, config: RomulistConfig? = null, preferredIntent: IntentConfig? = null) {
         val systemCfg = config?.systemConfig
-        if (systemCfg?.intent == null) {
+        val intentCfg = preferredIntent ?: systemCfg?.mainIntent
+        
+        if (intentCfg == null) {
             Toast.makeText(context, "No emulator configuration found", Toast.LENGTH_SHORT).show()
             return
         }
-
-        // Optional: Check if extension matches before launching
-        val ext = File(filePath).extension.lowercase()
-        if (systemCfg.extensions.isNotEmpty() && !systemCfg.extensions.any { it.lowercase() == ext }) {
-            Toast.makeText(context, "Unsupported file extension: $ext", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val intentCfg = systemCfg.intent
         val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
         val packageName = if (is64Bit) intentCfg.packageName else (intentCfg.packageName32 ?: intentCfg.packageName)
 
