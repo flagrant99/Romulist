@@ -36,6 +36,7 @@ fun FileRow(
     name: String,
     isDirectory: Boolean,
     onBack: () -> Unit,
+    isSelected: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     onClick: () -> Unit
 ) {
@@ -70,7 +71,13 @@ fun FileRow(
                     }
                 } else false
             }
-            .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+            .background(
+                when {
+                    isFocused -> Color.Green.copy(alpha = 0.2f)
+                    isSelected -> Color.Cyan.copy(alpha = 0.1f)
+                    else -> Color.Transparent
+                }
+            )
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -78,9 +85,20 @@ fun FileRow(
         Icon(
             imageVector = if (isDirectory) Icons.Default.Folder else Icons.Default.Description,
             contentDescription = null,
-            tint = if (isDirectory) Color.Yellow else Color.White
+            tint = when {
+                isDirectory -> Color.Yellow
+                isSelected -> Color.Cyan
+                else -> Color.White
+            }
         )
         Spacer(Modifier.width(12.dp))
-        Text(text = name, color = if (isDirectory) Purple80 else Color.Green)
+        Text(
+            text = name,
+            color = when {
+                isDirectory -> Purple80
+                isSelected -> Color.Cyan
+                else -> Color.Green
+            }
+        )
     }
 }

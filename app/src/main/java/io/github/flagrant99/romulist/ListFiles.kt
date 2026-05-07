@@ -36,7 +36,9 @@ import java.io.File
 fun ListFiles(
     currentPath: File,
     favoritePath: String?,
+    selectedFile: File?,
     onPathChange: (File) -> Unit,
+    onFileSelect: (File) -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -219,12 +221,14 @@ fun ListFiles(
                         name = file.name,
                         isDirectory = file.isDirectory,
                         onBack = onBack,
+                        isSelected = file == selectedFile,
                         focusRequester = if (index == 0) firstItemFocusRequester else remember { FocusRequester() }
                     ) {
                         if (file.isDirectory) {
                             onPathChange(file)
                         } else {
-                            // NEW: Launch game only if a favorite folder is set and file is underneath it
+                            onFileSelect(file)
+                            // Launch game only if a favorite folder is set and file is underneath it
                             favoritePath?.let { fav ->
                                 if (file.absolutePath.startsWith(fav)) {
                                     EmulatorNavigator.launchGame(

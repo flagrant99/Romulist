@@ -60,6 +60,7 @@ fun RomulistApp()
 
         var currentScreen by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
         var selectedFolder by remember { mutableStateOf<File?>(null) }
+        var selectedFile by remember { mutableStateOf<File?>(null) }
 
         // Loaded from SharedPreferences for persistence across reboots
         var favoriteFolder by remember {
@@ -73,10 +74,12 @@ fun RomulistApp()
                 // 1. If we are in a subfolder, go to parent
                 parent != null && selectedFolder?.absolutePath != volumes.find { it.directory?.absolutePath == selectedFolder?.absolutePath }?.directory?.absolutePath -> {
                     selectedFolder = parent
+                    selectedFile = null
                 }
                 // 2. If we are at the root of a drive, go back to Drive List
                 selectedFolder != null -> {
                     selectedFolder = null
+                    selectedFile = null
                 }
                 // 3. If we are on a different tab, go back to Home
                 currentScreen != AppDestinations.HOME -> {
@@ -170,7 +173,12 @@ fun RomulistApp()
                             ListFiles(
                                 currentPath = selectedFolder!!,
                                 favoritePath = favoriteFolder,
-                                onPathChange = { selectedFolder = it },
+                                selectedFile = selectedFile,
+                                onPathChange = { 
+                                    selectedFolder = it 
+                                    selectedFile = null
+                                },
+                                onFileSelect = { selectedFile = it },
                                 onBack = handleBack
                             )
                         } else {
@@ -186,6 +194,7 @@ fun RomulistApp()
 
                     AppDestinations.SETTINGS -> Settings(
                         currentFolder = selectedFolder,
+                        selectedFile = selectedFile,
                         favoritePath = favoriteFolder,
                         onSetFavorite = { path ->
                             favoriteFolder = path

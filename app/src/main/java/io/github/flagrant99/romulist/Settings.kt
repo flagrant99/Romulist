@@ -24,6 +24,7 @@ import java.io.File
 @Composable
 fun Settings(
     currentFolder: File?,
+    selectedFile: File?,
     favoritePath: String?,
     onSetFavorite: (String?) -> Unit,
 ) {
@@ -31,8 +32,8 @@ fun Settings(
     val context = LocalContext.current
     val sharedPrefs = remember { context.getSharedPreferences("RomulistPrefs", android.content.Context.MODE_PRIVATE) }
 
-    val romulistConfig = remember(currentFolder, favoritePath) {
-        var dir: File? = currentFolder
+    val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
+        var dir: File? = selectedFile ?: currentFolder
         val favFile = favoritePath?.let { File(it) }
         var foundConfig: EmulatorNavigator.RomulistConfig? = null
 
@@ -104,20 +105,48 @@ fun Settings(
                     modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
                 )
 
+                if (selectedFile != null) {
+                    Text(
+                        text = "Selected: ${selectedFile.name}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Cyan,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                } else {
+                    Text(
+                        text = "No file selected in Home",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Red,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+
                 val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
                 
                 allIntents.forEach { intent ->
                     val isSelected = preferredIntentName == intent.name
+                    val isEnabled = selectedFile != null
+                    
                     Text(
                         text = if (isSelected) "[ ${intent.name.uppercase()} ]" else intent.name.uppercase(),
                         style = MaterialTheme.typography.labelLarge,
-                        color = if (isSelected) Color.Cyan else Color.LightGray,
+                        color = when {
+                            !isEnabled -> Color.DarkGray
+                            isSelected -> Color.Cyan
+                            else -> Color.LightGray
+                        },
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
+                            .clickable(enabled = isEnabled) {
                                 preferredIntentName = intent.name
                                 sharedPrefs.edit().putString(prefKey, intent.name).apply()
+                                EmulatorNavigator.launchGame(
+                                    context = context,
+                                    filePath = selectedFile?.absolutePath ?: "",
+                                    config = romulistConfig,
+                                    preferredIntent = intent
+                                )
                             }
                             .padding(vertical = 12.dp)
                     )
