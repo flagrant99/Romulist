@@ -62,6 +62,7 @@ foreach ($file in $files) {
     $DestDir = ($DestPath.Substring(0, $DestPath.LastIndexOf('/')))
 
     Write-Host "Pushing: $RelativePath"
+    Write-Host "Target:  $DestPath"
 
     # Create directory and push file
     & $adb -s $targetSerial shell mkdir -p "'$DestDir'"
