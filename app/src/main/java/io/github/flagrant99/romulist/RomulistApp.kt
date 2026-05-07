@@ -71,19 +71,19 @@ fun RomulistApp()
             val parent = selectedFolder?.parentFile
 
             when {
-                // 1. If we are in a subfolder, go to parent
+                // 1. If we are on a different tab, go back to Home first (keeping folder state)
+                currentScreen != AppDestinations.HOME -> {
+                    currentScreen = AppDestinations.HOME
+                }
+                // 2. If we are in a subfolder on Home, go to parent
                 parent != null && selectedFolder?.absolutePath != volumes.find { it.directory?.absolutePath == selectedFolder?.absolutePath }?.directory?.absolutePath -> {
                     selectedFolder = parent
                     selectedFile = null
                 }
-                // 2. If we are at the root of a drive, go back to Drive List
+                // 3. If we are at the root of a drive on Home, go back to Drive List
                 selectedFolder != null -> {
                     selectedFolder = null
                     selectedFile = null
-                }
-                // 3. If we are on a different tab, go back to Home
-                currentScreen != AppDestinations.HOME -> {
-                    currentScreen = AppDestinations.HOME
                 }
                 // 4. At the top of Home (RootScreen), disable back navigation
                 else -> {

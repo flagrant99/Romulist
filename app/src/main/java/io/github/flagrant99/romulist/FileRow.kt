@@ -38,6 +38,7 @@ fun FileRow(
     onBack: () -> Unit,
     isSelected: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
+    onFocus: () -> Unit = {},
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -46,7 +47,10 @@ fun FileRow(
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
-            .onFocusChanged { isFocused = it.isFocused }
+            .onFocusChanged { 
+                isFocused = it.isFocused 
+                if (it.isFocused) onFocus()
+            }
             .focusable()
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyUp) {

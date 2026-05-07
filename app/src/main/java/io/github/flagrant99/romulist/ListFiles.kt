@@ -222,7 +222,12 @@ fun ListFiles(
                         isDirectory = file.isDirectory,
                         onBack = onBack,
                         isSelected = file == selectedFile,
-                        focusRequester = if (index == 0) firstItemFocusRequester else remember { FocusRequester() }
+                        focusRequester = if (index == 0) firstItemFocusRequester else remember { FocusRequester() },
+                        onFocus = {
+                            if (!file.isDirectory) {
+                                onFileSelect(file)
+                            }
+                        }
                     ) {
                         if (file.isDirectory) {
                             onPathChange(file)
