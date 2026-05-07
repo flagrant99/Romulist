@@ -69,4 +69,7 @@ foreach ($file in $files) {
     & $adb -s $targetSerial push "$($file.FullName)" "$DestPath"
 }
 
+Write-Host "Triggering Media Scan to update MTP/Windows Explorer..."
+& $adb -s $targetSerial shell cmd media scan-file "$DevicePath"
+
 Write-Host "Done!"
