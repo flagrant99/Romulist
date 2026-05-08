@@ -196,7 +196,7 @@ fun RomulistApp()
                         currentFolder = selectedFolder,
                         selectedFile = selectedFile,
                         favoritePath = favoriteFolder,
-                        onSetFavorite = { path ->
+                        onSetHome = { path ->
                             favoriteFolder = path
                             sharedPrefs.edit().putString("favorite_folder", path).apply()
                         }

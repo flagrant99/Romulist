@@ -19,7 +19,7 @@ import java.io.File
 fun SetHomeFolder(
     currentFolder: File?,
     homePath: String?,
-    onSetFavorite: (String?) -> Unit
+    onSetHome: (String?) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -54,7 +54,7 @@ fun SetHomeFolder(
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Yellow,
                 modifier = Modifier
-                    .clickable { onSetFavorite(currentFolder.absolutePath) }
+                    .clickable { onSetHome(currentFolder.absolutePath) }
                     .padding(12.dp)
             )
         }
@@ -80,7 +80,7 @@ fun SetHomeFolder(
                 style = MaterialTheme.typography.titleSmall,
                 color = Color.Red,
                 modifier = Modifier
-                    .clickable { onSetFavorite(null) }
+                    .clickable { onSetHome(null) }
                     .padding(12.dp)
             )
         }

@@ -26,7 +26,7 @@ fun Settings(
     currentFolder: File?,
     selectedFile: File?,
     favoritePath: String?,
-    onSetFavorite: (String?) -> Unit,
+    onSetHome: (String?) -> Unit,
 ) {
     var showSetHome by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
@@ -66,7 +66,7 @@ fun Settings(
             SetHomeFolder(
                 currentFolder = currentFolder,
                 homePath = favoritePath,
-                onSetFavorite = onSetFavorite
+                onSetHome = onSetHome
             )
         }
     } else {
