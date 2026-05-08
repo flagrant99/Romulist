@@ -4,6 +4,9 @@ import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.os.storage.StorageManager
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,10 +31,13 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import android.view.KeyEvent
 import io.github.flagrant99.romulist.ui.theme.RomulistTheme
 import java.io.File
 
+@OptIn(ExperimentalFoundationApi::class)
 @PreviewScreenSizes
 @Composable
 fun RomulistApp()
@@ -39,6 +45,7 @@ fun RomulistApp()
     RomulistTheme {
         val context = LocalContext.current
         val isPreview = LocalInspectionMode.current
+        val haptics = LocalHapticFeedback.current
 
         val storageManager = remember {
             if (isPreview) null else context.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
@@ -135,8 +142,11 @@ fun RomulistApp()
                         val isSelected = if (destination == AppDestinations.BACK) false
                         else currentScreen == destination
 
+                        val interactionSource = remember { MutableInteractionSource() }
+
                         NavigationBarItem(
                             selected = isSelected,
+                            interactionSource = interactionSource,
                             enabled = if (destination == AppDestinations.BACK) canGoBack else true,
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.Black,
@@ -147,11 +157,22 @@ fun RomulistApp()
                                 disabledIconColor = Color.Gray,
                                 disabledTextColor = Color.Gray
                             ),
+                            modifier = if (destination == AppDestinations.HOME) {
+                                Modifier.combinedClickable(
+                                    interactionSource = interactionSource,
+                                    indication = null,
+                                    onClick = { handleHome() },
+                                    onLongClick = {
+                                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        currentScreen = AppDestinations.SET_HOME
+                                    }
+                                )
+                            } else Modifier,
                             onClick = {
                                 if (destination == AppDestinations.BACK) {
                                     handleBack()
                                 } else if (destination == AppDestinations.HOME) {
-                                    handleHome()
+                                    // Handled by modifier
                                 } else {
                                     currentScreen = destination
                                 }
