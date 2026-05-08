@@ -65,7 +65,7 @@ fun Settings(
             )
             SetHomeFolder(
                 currentFolder = currentFolder,
-                favoritePath = favoritePath,
+                homePath = favoritePath,
                 onSetFavorite = onSetFavorite
             )
         }

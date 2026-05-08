@@ -18,7 +18,7 @@ import java.io.File
 @Composable
 fun SetHomeFolder(
     currentFolder: File?,
-    favoritePath: String?,
+    homePath: String?,
     onSetFavorite: (String?) -> Unit
 ) {
     Column(
@@ -61,20 +61,20 @@ fun SetHomeFolder(
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 32.dp), color = Color.DarkGray)
 
-        // Display Saved Favorite
+        // Display Saved Home Folder
         Text(
             text = "Saved Home Folder:",
             style = MaterialTheme.typography.labelMedium,
             color = Color.Gray
         )
         Text(
-            text = favoritePath ?: "None",
+            text = homePath ?: "None",
             style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-            color = if (favoritePath != null) Color.Green else Color.Red,
+            color = if (homePath != null) Color.Green else Color.Red,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        if (favoritePath != null) {
+        if (homePath != null) {
             Text(
                 text = "[ CLEAR HOME FOLDER ]",
                 style = MaterialTheme.typography.titleSmall,
