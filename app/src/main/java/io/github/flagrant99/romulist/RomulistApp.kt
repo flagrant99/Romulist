@@ -99,8 +99,12 @@ fun RomulistApp()
         }
 
         val handleHome = {
-            selectedFolder = favoriteFolder?.let { File(it) }
-            currentScreen = AppDestinations.HOME
+            if (favoriteFolder == null) {
+                currentScreen = AppDestinations.SET_HOME
+            } else {
+                selectedFolder = favoriteFolder?.let { File(it) }
+                currentScreen = AppDestinations.HOME
+            }
         }
 
         Scaffold(
@@ -125,7 +129,7 @@ fun RomulistApp()
                 },
             bottomBar = {
                 NavigationBar {
-                    AppDestinations.entries.forEach { destination ->
+                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME }.forEach { destination ->
 
                         // 1. Determine if this item is selected
                         val isSelected = if (destination == AppDestinations.BACK) false
@@ -199,6 +203,19 @@ fun RomulistApp()
                         onSetHome = { path ->
                             favoriteFolder = path
                             sharedPrefs.edit().putString("favorite_folder", path).apply()
+                        }
+                    )
+
+                    AppDestinations.SET_HOME -> SetHomeFolder(
+                        currentFolder = selectedFolder,
+                        homePath = favoriteFolder,
+                        onSetHome = { path ->
+                            favoriteFolder = path
+                            sharedPrefs.edit().putString("favorite_folder", path).apply()
+                            if (path != null) {
+                                currentScreen = AppDestinations.HOME
+                                selectedFolder = File(path)
+                            }
                         }
                     )
 
