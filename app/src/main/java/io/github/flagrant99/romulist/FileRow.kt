@@ -105,7 +105,7 @@ fun FileRow(
         Text(
             text = name,
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = if (isDirectory) FontFamily.Default else FontFamily.Monospace,
+                fontFamily = if (isDirectory) FontFamily.Default else FontFamily.Default,
                 shadow = if (isSelected) Shadow(
                     color = Color.Green.copy(alpha = 0.5f),
                     blurRadius = 8f
