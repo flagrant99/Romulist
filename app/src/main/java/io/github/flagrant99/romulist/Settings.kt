@@ -96,33 +96,26 @@ fun Settings(
         if (romulistConfig?.systemConfig != null) {
             val system = romulistConfig.systemConfig
 
-            Text(
-                text = "SYSTEM INFO",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontFamily = FontFamily.Monospace,
-                    shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
-                ),
-                color = Color.Green
-            )
-            Text(
-                text = "System: ${system.name}",
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                color = Color.Green
-            )
-
             if (selectedFile != null) {
                 Text(
                     text = "Selected: ${selectedFile.name}",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
             } else {
                 Text(
                     text = "No file selected",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Red.copy(alpha = 0.7f)
                 )
             }
+
+            Text(
+                text = "System: ${system.name}",
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                color = Color.Green
+            )
+
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
