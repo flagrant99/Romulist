@@ -11,7 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import java.io.File
@@ -24,6 +27,8 @@ fun Settings(
 ) {
     val context = LocalContext.current
 
+    var configSource by remember { mutableStateOf<String?>(null) }
+
     val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
         var dir: File? = selectedFile ?: currentFolder
         val favFile = favoritePath?.let { File(it) }
@@ -32,6 +37,7 @@ fun Settings(
         while (dir != null) {
             val configFile = File(dir, "romulist.xml")
             if (configFile.exists()) {
+                configSource = configFile.absolutePath
                 foundConfig = EmulatorNavigator.parseConfig(configFile)
                 if (foundConfig != null) break
             }
@@ -79,14 +85,23 @@ fun Settings(
                     )
                 }
 
+                Text(
+                    text = "Source: ${configSource ?: "Internal"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
                 val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
                 
                 allIntents.forEach { intent ->
                     val isMainIntent = intent == system.mainIntent
                     val isEnabled = selectedFile != null
                     
+                    val displayName = intent.name.ifBlank { "LAUNCH" }.uppercase()
+                    
                     Text(
-                        text = if (isMainIntent) "[ ${intent.name.uppercase()} ]" else intent.name.uppercase(),
+                        text = if (isMainIntent) "[ $displayName ]" else displayName,
                         style = MaterialTheme.typography.labelLarge,
                         color = when {
                             !isEnabled -> Color.DarkGray
