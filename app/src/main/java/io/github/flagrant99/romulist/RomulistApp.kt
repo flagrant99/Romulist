@@ -173,7 +173,7 @@ fun RomulistApp()
                             interactionSource = interactionSource,
                             enabled = when (destination) {
                                 AppDestinations.BACK -> canGoBack
-                                AppDestinations.SETTINGS -> selectedFile != null
+                                AppDestinations.DETAIL -> selectedFile != null
                                 else -> true
                             },
                             colors = NavigationBarItemDefaults.colors(
@@ -257,7 +257,7 @@ fun RomulistApp()
                         }
                     }
 
-                    AppDestinations.SETTINGS -> Settings(
+                    AppDestinations.DETAIL -> Detail(
                         currentFolder = selectedFolder,
                         selectedFile = selectedFile,
                         favoritePath = favoriteFolder,

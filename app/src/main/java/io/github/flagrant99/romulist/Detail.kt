@@ -34,7 +34,7 @@ import android.view.KeyEvent
 import java.io.File
 
 @Composable
-fun Settings(
+fun Detail(
     currentFolder: File?,
     selectedFile: File?,
     favoritePath: String?,
