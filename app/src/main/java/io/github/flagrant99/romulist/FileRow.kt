@@ -29,6 +29,8 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import android.view.KeyEvent
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.font.FontFamily
 import io.github.flagrant99.romulist.ui.theme.Purple80
 
 @Composable
@@ -98,6 +100,7 @@ fun FileRow(
         Spacer(Modifier.width(12.dp))
         Text(
             text = name,
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
             color = when {
                 isDirectory -> Purple80
                 isSelected -> Color.Cyan
