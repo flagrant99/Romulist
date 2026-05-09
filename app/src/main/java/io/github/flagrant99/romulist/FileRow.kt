@@ -88,8 +88,14 @@ fun FileRow(
                 }
             )
             .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
+                onClick = {
+                    focusRequester.requestFocus()
+                    onClick()
+                },
+                onLongClick = {
+                    focusRequester.requestFocus()
+                    onLongClick()
+                }
             )
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
