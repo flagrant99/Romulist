@@ -1,6 +1,5 @@
 package io.github.flagrant99.romulist
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,10 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -26,9 +21,7 @@ fun Settings(
     currentFolder: File?,
     selectedFile: File?,
     favoritePath: String?,
-    onSetHome: (String?) -> Unit,
 ) {
-    var showSetHome by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
@@ -48,53 +41,23 @@ fun Settings(
         foundConfig
     }
 
-    if (showSetHome) {
-        BackHandler {
-            showSetHome = false
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.Green,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = "< BACK TO SETTINGS",
-                style = MaterialTheme.typography.labelLarge,
-                color = Color.Gray,
-                modifier = Modifier
-                    .clickable { showSetHome = false }
-                    .padding(16.dp)
-            )
-            SetHomeFolder(
-                currentFolder = currentFolder,
-                homePath = favoritePath,
-                onSetHome = onSetHome
-            )
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.Green,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            Text(
-                text = "[ SET HOME FOLDER ]",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Yellow,
-                modifier = Modifier
-                    .clickable { showSetHome = true }
-                    .padding(vertical = 8.dp)
-            )
-
-            if (romulistConfig?.systemConfig != null) {
+        if (romulistConfig?.systemConfig != null) {
                 val system = romulistConfig.systemConfig
 
                 Text(
-                    text = "Emulator: ${system.name}",
+                    text = "System: ${system.name}",
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.Green,
                     modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
@@ -109,7 +72,7 @@ fun Settings(
                     )
                 } else {
                     Text(
-                        text = "No file selected in Home",
+                        text = "No file selected",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Red,
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -146,5 +109,4 @@ fun Settings(
                 }
             }
         }
-    }
 }

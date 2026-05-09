@@ -242,10 +242,6 @@ fun RomulistApp()
                         currentFolder = selectedFolder,
                         selectedFile = selectedFile,
                         favoritePath = favoriteFolder,
-                        onSetHome = { path ->
-                            favoriteFolder = path
-                            settings.favoriteFolder = path
-                        }
                     )
 
                     AppDestinations.SET_HOME -> SetHomeFolder(
