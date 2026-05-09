@@ -44,6 +44,15 @@ fun Settings(
     val firstIntentFocusRequester = remember { FocusRequester() }
 
     var configSource by remember { mutableStateOf<String?>(null) }
+    val displayConfigSource = remember(configSource, favoritePath) {
+        val source = configSource ?: return@remember "Internal"
+        if (favoritePath != null && source.startsWith(favoritePath)) {
+            source.substring(favoritePath.length).trimStart(File.separatorChar)
+                .ifEmpty { "romulist.xml" }
+        } else {
+            source
+        }
+    }
 
     val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
         var dir: File? = selectedFile ?: currentFolder
@@ -75,7 +84,7 @@ fun Settings(
             .padding(16.dp)
     ) {
         Text(
-            text = "SETTINGS",
+            text = "FILE",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontFamily = FontFamily.Monospace,
                 shadow = Shadow(Color.Green.copy(alpha = 0.7f), blurRadius = 16f)
@@ -121,7 +130,16 @@ fun Settings(
             )
 
             Text(
-                text = "Source: ${configSource ?: "Internal"}",
+                text = "INTENTS",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontFamily = FontFamily.Monospace,
+                    shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
+                ),
+                color = Color.Green
+            )
+
+            Text(
+                text = "Source: $displayConfigSource",
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontFamily = FontFamily.Monospace,
                     shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
