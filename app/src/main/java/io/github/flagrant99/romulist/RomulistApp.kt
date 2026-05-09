@@ -156,7 +156,11 @@ fun RomulistApp()
                         NavigationBarItem(
                             selected = isSelected,
                             interactionSource = interactionSource,
-                            enabled = if (destination == AppDestinations.BACK) canGoBack else true,
+                            enabled = when (destination) {
+                                AppDestinations.BACK -> canGoBack
+                                AppDestinations.SETTINGS -> selectedFile != null
+                                else -> true
+                            },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.Black,
                                 selectedTextColor = Color.Green,
