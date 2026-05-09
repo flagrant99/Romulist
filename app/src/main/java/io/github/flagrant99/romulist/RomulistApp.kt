@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -66,13 +67,26 @@ fun RomulistApp()
         val settings = remember { PersistentSettings(context) }
 
         var currentScreen by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
-        var selectedFolder by remember { mutableStateOf<File?>(null) }
-        var selectedFile by remember { mutableStateOf<File?>(null) }
+        var selectedFolder by rememberSaveable(
+            stateSaver = Saver<File?, String>(
+                save = { it?.absolutePath ?: "" },
+                restore = { if (it.isEmpty()) null else File(it) }
+            )
+        ) { mutableStateOf(null) }
+
+        var selectedFile by rememberSaveable(
+            stateSaver = Saver<File?, String>(
+                save = { it?.absolutePath ?: "" },
+                restore = { if (it.isEmpty()) null else File(it) }
+            )
+        ) { mutableStateOf(null) }
 
         // Loaded from PersistentSettings for persistence across reboots
-        var favoriteFolder by remember {
+        var favoriteFolder by rememberSaveable {
             mutableStateOf(settings.favoriteFolder)
         }
+
+        var isInitialized by rememberSaveable { mutableStateOf(false) }
 
         val handleHome = {
             if (favoriteFolder == null) {
@@ -85,8 +99,9 @@ fun RomulistApp()
         }
 
         LaunchedEffect(Unit) {
-            if (favoriteFolder != null) {
+            if (!isInitialized && favoriteFolder != null) {
                 handleHome()
+                isInitialized = true
             }
         }
 
@@ -246,6 +261,7 @@ fun RomulistApp()
                         currentFolder = selectedFolder,
                         selectedFile = selectedFile,
                         favoritePath = favoriteFolder,
+                        onBack = handleBack
                     )
 
                     AppDestinations.SET_HOME -> SetHomeFolder(

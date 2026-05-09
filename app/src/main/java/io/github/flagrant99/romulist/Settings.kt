@@ -1,6 +1,8 @@
 package io.github.flagrant99.romulist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,12 +13,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import android.view.KeyEvent
 import java.io.File
 
 @Composable
@@ -24,8 +38,10 @@ fun Settings(
     currentFolder: File?,
     selectedFile: File?,
     favoritePath: String?,
+    onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val firstIntentFocusRequester = remember { FocusRequester() }
 
     var configSource by remember { mutableStateOf<String?>(null) }
 
@@ -47,81 +63,139 @@ fun Settings(
         foundConfig
     }
 
+    LaunchedEffect(romulistConfig) {
+        if (romulistConfig?.systemConfig != null) {
+            firstIntentFocusRequester.requestFocus()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         Text(
-            text = "Settings",
-            style = MaterialTheme.typography.headlineMedium,
+            text = "SETTINGS",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = FontFamily.Monospace,
+                shadow = Shadow(Color.Green.copy(alpha = 0.7f), blurRadius = 16f)
+            ),
             color = Color.Green,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         if (romulistConfig?.systemConfig != null) {
-                val system = romulistConfig.systemConfig
+            val system = romulistConfig.systemConfig
 
+            Text(
+                text = "SYSTEM INFO",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontFamily = FontFamily.Monospace,
+                    shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
+                ),
+                color = Color.Green
+            )
+            Text(
+                text = "System: ${system.name}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                color = Color.Green
+            )
+
+            if (selectedFile != null) {
                 Text(
-                    text = "System: ${system.name}",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.Green,
-                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+                    text = "Selected: ${selectedFile.name}",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
                 )
-
-                if (selectedFile != null) {
-                    Text(
-                        text = "Selected: ${selectedFile.name}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Cyan,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                } else {
-                    Text(
-                        text = "No file selected",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Red,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-
+            } else {
                 Text(
-                    text = "Source: ${configSource ?: "Internal"}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    text = "No file selected",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Red.copy(alpha = 0.7f)
                 )
+            }
 
-                val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
-                
-                allIntents.forEach { intent ->
-                    val isMainIntent = intent == system.mainIntent
-                    val isEnabled = selectedFile != null
-                    
-                    val displayName = intent.name.ifBlank { "LAUNCH" }.uppercase()
-                    
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = Color.Green.copy(alpha = 0.3f)
+            )
+
+            Text(
+                text = "Source: ${configSource ?: "Internal"}",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                    shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                ),
+                color = Color.Green,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
+
+            allIntents.forEachIndexed { index, intent ->
+                var isFocused by remember { mutableStateOf(false) }
+                val isMainIntent = intent == system.mainIntent
+                val isEnabled = selectedFile != null
+
+                val displayName = intent.name.ifBlank { "LAUNCH" }.uppercase()
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(if (index == 0) firstIntentFocusRequester else remember { FocusRequester() })
+                        .onFocusChanged { isFocused = it.isFocused }
+                        .focusable()
+                        .onKeyEvent { keyEvent ->
+                            if (keyEvent.type == KeyEventType.KeyUp) {
+                                when (keyEvent.nativeKeyEvent.keyCode) {
+                                    KeyEvent.KEYCODE_BUTTON_B,
+                                    KeyEvent.KEYCODE_DPAD_CENTER,
+                                    KeyEvent.KEYCODE_ENTER -> {
+                                        if (isEnabled) {
+                                            EmulatorNavigator.launchGame(
+                                                context = context,
+                                                filePath = selectedFile?.absolutePath ?: "",
+                                                config = romulistConfig,
+                                                preferredIntent = intent
+                                            )
+                                        }
+                                        true
+                                    }
+                                    KeyEvent.KEYCODE_BUTTON_A -> {
+                                        onBack()
+                                        true
+                                    }
+                                    else -> false
+                                }
+                            } else false
+                        }
+                        .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                        .clickable(enabled = isEnabled) {
+                            EmulatorNavigator.launchGame(
+                                context = context,
+                                filePath = selectedFile?.absolutePath ?: "",
+                                config = romulistConfig,
+                                preferredIntent = intent
+                            )
+                        }
+                        .padding(16.dp)
+                ) {
                     Text(
                         text = if (isMainIntent) "[ $displayName ]" else displayName,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = when {
-                            !isEnabled -> Color.DarkGray
-                            isMainIntent -> Color.Cyan
-                            else -> Color.LightGray
-                        },
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            shadow = Shadow(
+                                color = Color.Green.copy(alpha = 0.5f),
+                                offset = Offset(0f, 0f),
+                                blurRadius = 12f
+                            )
+                        ),
+                        color = if (isEnabled) Color.Green else Color.DarkGray,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = isEnabled) {
-                                EmulatorNavigator.launchGame(
-                                    context = context,
-                                    filePath = selectedFile?.absolutePath ?: "",
-                                    config = romulistConfig,
-                                    preferredIntent = intent
-                                )
-                            }
-                            .padding(vertical = 12.dp)
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
         }
+    }
 }
