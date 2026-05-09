@@ -35,6 +35,7 @@ object EmulatorNavigator {
     )
 
     fun parseConfig(file: File): RomulistConfig? {
+        android.util.Log.d("Romulist", "--- Starting parse of: ${file.absolutePath} ---")
         try {
             var systemConfig: FolderConfig? = null
             val exclusions = mutableListOf<String>()
@@ -45,7 +46,7 @@ object EmulatorNavigator {
             var eventType = parser.eventType
             var currentFolder: FolderConfig? = null
             var currentIntent: IntentConfig? = null
-            var currentExtras = mutableMapOf<String, String>()
+            val currentExtras = mutableMapOf<String, String>()
             var inExclusions = false
             var inAltIntents = false
             val altIntents = mutableListOf<IntentConfig>()
@@ -57,35 +58,51 @@ object EmulatorNavigator {
                 val tagName = parser.name
                 when (eventType) {
                     XmlPullParser.START_TAG -> {
+                        android.util.Log.d("Romulist", "START_TAG: <$tagName>")
                         when (tagName) {
                             "exclusions" -> inExclusions = true
                             "alt_intents" -> inAltIntents = true
                             "folder" -> {
                                 val nameAttr = parser.getAttributeValue(null, "name")
+                                android.util.Log.d("Romulist", "  folder nameAttr: $nameAttr, inExclusions: $inExclusions")
                                 if (inExclusions) {
                                     nameAttr?.let { exclusions.add(it) }
                                 } else {
-                                    val extensions = parser.getAttributeValue(null, "extensions")?.split(",")?.map { it.trim() } ?: emptyList()
-                                    // Use directory name if 'name' attribute is missing
+                                    val extensionsAttr = parser.getAttributeValue(null, "extensions")
+                                    val extensions = extensionsAttr?.split(",")?.map { it.trim() } ?: emptyList()
                                     currentFolder = FolderConfig(nameAttr ?: systemName, extensions, null)
                                 }
                             }
                             "intent" -> {
-                                val name = parser.getAttributeValue(null, "name") ?: ""
+                                val nameAttr = parser.getAttributeValue(null, "name") 
+                                    ?: parser.getAttributeValue(null, "Name")
+                                
                                 val pkg = parser.getAttributeValue(null, "packageName") ?: ""
                                 val pkg32 = parser.getAttributeValue(null, "packageName32")
                                 val cls = parser.getAttributeValue(null, "className")
                                 val dataAttr = parser.getAttributeValue(null, "data")
-                                currentIntent = IntentConfig(name, pkg, pkg32, cls, "", dataAttr, emptyMap())
-                                currentExtras = mutableMapOf()
+                                
+                                val effectiveName = when {
+                                    !nameAttr.isNullOrBlank() -> nameAttr
+                                    currentFolder != null && !currentFolder.name.isBlank() -> currentFolder.name
+                                    !systemName.isBlank() -> systemName
+                                    else -> "Launch"
+                                }
+
+                                android.util.Log.d("Romulist", "Found intent start: nameAttr='$nameAttr', effective='$effectiveName', pkg='$pkg'")
+                                
+                                currentIntent = IntentConfig(effectiveName, pkg, pkg32, cls, "", dataAttr, emptyMap())
+                                currentExtras.clear()
                             }
                             "action" -> {
                                 val actionName = parser.getAttributeValue(null, "name") ?: ""
+                                android.util.Log.d("Romulist", "  action: $actionName")
                                 currentIntent = currentIntent?.copy(action = actionName)
                             }
                             "extra" -> {
                                 val extraName = parser.getAttributeValue(null, "name")
                                 val extraValue = parser.getAttributeValue(null, "value")
+                                android.util.Log.d("Romulist", "  extra: $extraName = $extraValue")
                                 if (extraName != null && extraValue != null) {
                                     currentExtras[extraName] = extraValue
                                 }
@@ -93,23 +110,27 @@ object EmulatorNavigator {
                         }
                     }
                     XmlPullParser.END_TAG -> {
+                        android.util.Log.d("Romulist", "END_TAG: </$tagName>")
                         when (tagName) {
                             "exclusions" -> inExclusions = false
                             "alt_intents" -> inAltIntents = false
                             "intent" -> {
-                                currentIntent = currentIntent?.copy(extras = currentExtras.toMap())
-                                if (inAltIntents) {
-                                    currentIntent?.let { altIntents.add(it) }
-                                } else {
-                                    currentFolder = currentFolder?.copy(mainIntent = currentIntent)
+                                val finalizedIntent = currentIntent?.copy(extras = currentExtras.toMap())
+                                android.util.Log.d("Romulist", "  Finalizing intent: ${finalizedIntent?.name}")
+                                if (finalizedIntent != null) {
+                                    if (inAltIntents) {
+                                        altIntents.add(finalizedIntent)
+                                    } else {
+                                        currentFolder = currentFolder?.copy(mainIntent = finalizedIntent)
+                                    }
                                 }
+                                currentIntent = null
+                                currentExtras.clear()
                             }
                             "folder" -> {
                                 if (!inExclusions) {
                                     systemConfig = currentFolder?.copy(altIntents = altIntents.toList())
-                                    currentFolder = null
-                                    currentIntent = null
-                                    altIntents.clear()
+                                    android.util.Log.d("Romulist", "  Finalizing systemConfig for: ${systemConfig?.name}")
                                 }
                             }
                         }
@@ -121,6 +142,7 @@ object EmulatorNavigator {
                 }
             }
             inputStream.close()
+            android.util.Log.d("Romulist", "--- Finished parse. systemConfig found: ${systemConfig != null} ---")
             return RomulistConfig(systemConfig, exclusions)
         } catch (e: Exception) {
             android.util.Log.e("Romulist", "Failed to open/parse config: ${e.message}")
