@@ -5,8 +5,8 @@ import android.content.Context
 import android.os.storage.StorageManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,6 +33,10 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import android.view.KeyEvent
 import io.github.flagrant99.romulist.ui.theme.RomulistTheme
 import java.io.File
@@ -115,6 +119,8 @@ fun RomulistApp()
             }
         }
 
+        var isHomeLongPressActive by remember { mutableStateOf(false) }
+
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
@@ -159,20 +165,34 @@ fun RomulistApp()
                                 disabledTextColor = Color.Gray
                             ),
                             modifier = if (destination == AppDestinations.HOME) {
-                                Modifier.combinedClickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
-                                    onClick = { handleHome() },
-                                    onLongClick = {
-                                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        currentScreen = AppDestinations.SET_HOME
+                                Modifier.pointerInput(Unit) {
+                                    awaitEachGesture {
+                                        // Use Initial pass to see the event before NavigationBarItem consumes it
+                                        awaitFirstDown(pass = PointerEventPass.Initial)
+                                        isHomeLongPressActive = false
+                                        
+                                        val timeout = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                            waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                        }
+
+                                        if (timeout == null) {
+                                            // Long press detected
+                                            isHomeLongPressActive = true
+                                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            currentScreen = AppDestinations.SET_HOME
+                                        }
                                     }
-                                )
+                                }
                             } else Modifier,
                             onClick = {
                                 when (destination) {
                                     AppDestinations.BACK -> handleBack()
-                                    AppDestinations.HOME -> handleHome()
+                                    AppDestinations.HOME -> {
+                                        if (!isHomeLongPressActive) {
+                                            handleHome()
+                                        }
+                                        isHomeLongPressActive = false
+                                    }
                                     else -> currentScreen = destination
                                 }
                             },
