@@ -1,5 +1,6 @@
 package io.github.flagrant99.romulist
 
+import android.app.ActivityManager
 import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.os.StatFs
@@ -64,6 +65,16 @@ fun RootScreen(
                 val arch = if (is64Bit) "64-bit" else "32-bit"
                 val deviceName = "${android.os.Build.MODEL}"
 
+                val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val memoryInfo = ActivityManager.MemoryInfo()
+                activityManager.getMemoryInfo(memoryInfo)
+                val totalRam = memoryInfo.totalMem
+                val ramStr = if (totalRam >= 1024L * 1024 * 1024) {
+                    "${(totalRam + 512L * 1024 * 1024) / (1024 * 1024 * 1024)} GB"
+                } else {
+                    "${totalRam / (1024 * 1024)} MB"
+                }
+
                 Text(
                     text = "SYSTEM INFO",
                     style = MaterialTheme.typography.labelLarge.copy(
@@ -84,6 +95,11 @@ fun RootScreen(
                 )
                 Text(
                     text = "Device: $deviceName",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
+                )
+                Text(
+                    text = "RAM: $ramStr",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
