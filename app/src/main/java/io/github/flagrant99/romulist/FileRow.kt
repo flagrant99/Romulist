@@ -1,7 +1,7 @@
 package io.github.flagrant99.romulist
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,6 +43,7 @@ fun FileRow(
     showIcon: Boolean = true,
     focusRequester: FocusRequester = remember { FocusRequester() },
     onFocus: () -> Unit = {},
+    onLongClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -60,15 +61,15 @@ fun FileRow(
                 if (keyEvent.type == KeyEventType.KeyUp) {
                     when (keyEvent.nativeKeyEvent.keyCode) {
                         KeyEvent.KEYCODE_BUTTON_B -> {
-                            onClick()
+                            onLongClick()
                             true
                         }
                         KeyEvent.KEYCODE_DPAD_CENTER -> {
-                            onClick()
+                            onLongClick()
                             true
                         }
                         KeyEvent.KEYCODE_ENTER -> {
-                            onClick()
+                            onLongClick()
                             true
                         }
                         KeyEvent.KEYCODE_BUTTON_A -> {
@@ -86,7 +87,10 @@ fun FileRow(
                     else -> Color.Transparent
                 }
             )
-            .clickable { onClick() }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

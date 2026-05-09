@@ -225,23 +225,30 @@ fun ListFiles(
                             if (!file.isDirectory) {
                                 onFileSelect(file)
                             }
+                        },
+                        onLongClick = {
+                            if (file.isDirectory) {
+                                onPathChange(file)
+                            } else {
+                                onFileSelect(file)
+                                // Launch game only if a favorite folder is set and file is underneath it
+                                favoritePath?.let { fav ->
+                                    if (file.absolutePath.startsWith(fav)) {
+                                        EmulatorNavigator.launchGame(
+                                            context = context,
+                                            filePath = file.absolutePath,
+                                            config = romulistConfig,
+                                            preferredIntent = preferredIntent
+                                        )
+                                    }
+                                }
+                            }
                         }
                     ) {
                         if (file.isDirectory) {
                             onPathChange(file)
                         } else {
                             onFileSelect(file)
-                            // Launch game only if a favorite folder is set and file is underneath it
-                            favoritePath?.let { fav ->
-                                if (file.absolutePath.startsWith(fav)) {
-                                    EmulatorNavigator.launchGame(
-                                        context = context,
-                                        filePath = file.absolutePath,
-                                        config = romulistConfig,
-                                        preferredIntent = preferredIntent
-                                    )
-                                }
-                            }
                         }
                     }
                 }
