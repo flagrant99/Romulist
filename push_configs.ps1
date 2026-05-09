@@ -1,5 +1,5 @@
 param (
-    [string]$DevicePath = "/sdcard/ROMs/ROMs",
+    [string]$DevicePath = "/storage/AC50-F7EF/ROMs",
     [string]$Serial = "HA1Q3MLF"
 )
 
