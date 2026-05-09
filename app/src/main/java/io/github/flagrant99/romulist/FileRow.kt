@@ -24,6 +24,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
@@ -104,11 +105,15 @@ fun FileRow(
         Text(
             text = name,
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = if (isDirectory) FontFamily.Default else FontFamily.Monospace
+                fontFamily = if (isDirectory) FontFamily.Default else FontFamily.Monospace,
+                shadow = if (isSelected) Shadow(
+                    color = Color.Green.copy(alpha = 0.5f),
+                    blurRadius = 8f
+                ) else null
             ),
             color = when {
                 isDirectory -> Purple80
-                isSelected -> Color.Cyan
+                isSelected -> Color.Green
                 else -> Color.Green
             }
         )
