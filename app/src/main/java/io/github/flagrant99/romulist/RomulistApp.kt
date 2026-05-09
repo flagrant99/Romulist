@@ -17,6 +17,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +74,22 @@ fun RomulistApp()
             mutableStateOf(settings.favoriteFolder)
         }
 
+        val handleHome = {
+            if (favoriteFolder == null) {
+                currentScreen = AppDestinations.SET_HOME
+            } else {
+                selectedFolder = File(favoriteFolder!!)
+                selectedFile = null
+                currentScreen = AppDestinations.HOME
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            if (favoriteFolder != null) {
+                handleHome()
+            }
+        }
+
         val handleBack = {
             val parent = selectedFolder?.parentFile
 
@@ -102,16 +119,6 @@ fun RomulistApp()
 
         BackHandler(enabled = true) {
             handleBack()
-        }
-
-        val handleHome = {
-            if (favoriteFolder == null) {
-                currentScreen = AppDestinations.SET_HOME
-            } else {
-                selectedFolder = File(favoriteFolder!!)
-                selectedFile = null
-                currentScreen = AppDestinations.HOME
-            }
         }
 
         var isHomeLongPressActive by remember { mutableStateOf(false) }
