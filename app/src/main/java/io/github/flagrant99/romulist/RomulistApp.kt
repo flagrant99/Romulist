@@ -62,20 +62,15 @@ fun RomulistApp()
         }
 
         // Persistence Setup
-        val sharedPrefs = remember {
-            context.getSharedPreferences(
-                "RomulistPrefs",
-                Context.MODE_PRIVATE
-            )
-        }
+        val settings = remember { PersistentSettings(context) }
 
         var currentScreen by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
         var selectedFolder by remember { mutableStateOf<File?>(null) }
         var selectedFile by remember { mutableStateOf<File?>(null) }
 
-        // Loaded from SharedPreferences for persistence across reboots
+        // Loaded from PersistentSettings for persistence across reboots
         var favoriteFolder by remember {
-            mutableStateOf(sharedPrefs.getString("favorite_folder", null))
+            mutableStateOf(settings.favoriteFolder)
         }
 
         val handleBack = {
@@ -242,7 +237,7 @@ fun RomulistApp()
                         favoritePath = favoriteFolder,
                         onSetHome = { path ->
                             favoriteFolder = path
-                            sharedPrefs.edit().putString("favorite_folder", path).apply()
+                            settings.favoriteFolder = path
                         }
                     )
 
@@ -251,7 +246,7 @@ fun RomulistApp()
                         homePath = favoriteFolder,
                         onSetHome = { path ->
                             favoriteFolder = path
-                            sharedPrefs.edit().putString("favorite_folder", path).apply()
+                            settings.favoriteFolder = path
                             if (path != null) {
                                 currentScreen = AppDestinations.HOME
                                 selectedFolder = File(path)

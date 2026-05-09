@@ -30,7 +30,7 @@ fun Settings(
 ) {
     var showSetHome by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
-    val sharedPrefs = remember { context.getSharedPreferences("RomulistPrefs", android.content.Context.MODE_PRIVATE) }
+    val settings = remember { PersistentSettings(context) }
 
     val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
         var dir: File? = selectedFile ?: currentFolder
@@ -93,9 +93,8 @@ fun Settings(
 
             if (romulistConfig?.systemConfig != null) {
                 val system = romulistConfig.systemConfig
-                val prefKey = "preferred_intent_${system.name}"
                 var preferredIntentName by remember(system.name) { 
-                    mutableStateOf(sharedPrefs.getString(prefKey, system.mainIntent?.name)) 
+                    mutableStateOf(settings.getPreferredIntent(system.name, system.mainIntent?.name)) 
                 }
 
                 Text(
@@ -140,7 +139,7 @@ fun Settings(
                             .fillMaxWidth()
                             .clickable(enabled = isEnabled) {
                                 preferredIntentName = intent.name
-                                sharedPrefs.edit().putString(prefKey, intent.name).apply()
+                                settings.setPreferredIntent(system.name, intent.name)
                                 EmulatorNavigator.launchGame(
                                     context = context,
                                     filePath = selectedFile?.absolutePath ?: "",

@@ -110,12 +110,11 @@ fun ListFiles(
 
     val romulistConfig = configResult.first
 
-    val sharedPrefs = remember { context.getSharedPreferences("RomulistPrefs", android.content.Context.MODE_PRIVATE) }
+    val settings = remember { PersistentSettings(context) }
     val system = romulistConfig?.systemConfig
     val preferredIntent = remember(system, refreshToggle) {
         if (system == null) return@remember null
-        val prefKey = "preferred_intent_${system.name}"
-        val name = sharedPrefs.getString(prefKey, system.mainIntent?.name)
+        val name = settings.getPreferredIntent(system.name, system.mainIntent?.name)
         val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
         allIntents.find { it.name == name } ?: system.mainIntent
     }
