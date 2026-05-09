@@ -30,7 +30,6 @@ fun Settings(
 ) {
     var showSetHome by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
-    val settings = remember { PersistentSettings(context) }
 
     val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
         var dir: File? = selectedFile ?: currentFolder
@@ -93,9 +92,6 @@ fun Settings(
 
             if (romulistConfig?.systemConfig != null) {
                 val system = romulistConfig.systemConfig
-                var preferredIntentName by remember(system.name) { 
-                    mutableStateOf(settings.getPreferredIntent(system.name, system.mainIntent?.name)) 
-                }
 
                 Text(
                     text = "Emulator: ${system.name}",
@@ -123,23 +119,21 @@ fun Settings(
                 val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
                 
                 allIntents.forEach { intent ->
-                    val isSelected = preferredIntentName == intent.name
+                    val isMainIntent = intent == system.mainIntent
                     val isEnabled = selectedFile != null
                     
                     Text(
-                        text = if (isSelected) "[ ${intent.name.uppercase()} ]" else intent.name.uppercase(),
+                        text = if (isMainIntent) "[ ${intent.name.uppercase()} ]" else intent.name.uppercase(),
                         style = MaterialTheme.typography.labelLarge,
                         color = when {
                             !isEnabled -> Color.DarkGray
-                            isSelected -> Color.Cyan
+                            isMainIntent -> Color.Cyan
                             else -> Color.LightGray
                         },
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable(enabled = isEnabled) {
-                                preferredIntentName = intent.name
-                                settings.setPreferredIntent(system.name, intent.name)
                                 EmulatorNavigator.launchGame(
                                     context = context,
                                     filePath = selectedFile?.absolutePath ?: "",

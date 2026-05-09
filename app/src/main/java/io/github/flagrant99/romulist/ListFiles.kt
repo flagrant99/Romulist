@@ -110,14 +110,8 @@ fun ListFiles(
 
     val romulistConfig = configResult.first
 
-    val settings = remember { PersistentSettings(context) }
     val system = romulistConfig?.systemConfig
-    val preferredIntent = remember(system, refreshToggle) {
-        if (system == null) return@remember null
-        val name = settings.getPreferredIntent(system.name, system.mainIntent?.name)
-        val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
-        allIntents.find { it.name == name } ?: system.mainIntent
-    }
+    val preferredIntent = system?.mainIntent
 
     val allowedExtensions = remember(romulistConfig) {
         romulistConfig?.systemConfig?.extensions?.map { it.lowercase() }?.toSet() ?: emptySet()

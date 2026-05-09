@@ -14,12 +14,4 @@ class PersistentSettings(context: Context) {
         set(value) {
             sharedPrefs.edit().putString("favorite_folder", value).apply()
         }
-
-    fun getPreferredIntent(systemName: String, defaultName: String?): String? {
-        return sharedPrefs.getString("preferred_intent_$systemName", defaultName)
-    }
-
-    fun setPreferredIntent(systemName: String, intentName: String) {
-        sharedPrefs.edit().putString("preferred_intent_$systemName", intentName).apply()
-    }
 }
