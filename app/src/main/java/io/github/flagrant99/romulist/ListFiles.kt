@@ -205,6 +205,7 @@ fun ListFiles(
                 )
             }
         } else {
+            val showIcons = files.any { it.isDirectory }
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 state = listState
@@ -215,6 +216,7 @@ fun ListFiles(
                         isDirectory = file.isDirectory,
                         onBack = onBack,
                         isSelected = file == selectedFile,
+                        showIcon = showIcons,
                         focusRequester = if (index == 0) firstItemFocusRequester else remember { FocusRequester() },
                         onFocus = {
                             if (!file.isDirectory) {
