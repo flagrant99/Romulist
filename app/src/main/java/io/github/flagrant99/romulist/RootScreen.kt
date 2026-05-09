@@ -60,6 +60,31 @@ fun RootScreen(
     {
         item {
             Column(modifier = Modifier.padding(16.dp)) {
+                val packageInfo = try {
+                    context.packageManager.getPackageInfo(context.packageName, 0)
+                } catch (e: Exception) {
+                    null
+                }
+                val appVersion = packageInfo?.versionName ?: "Unknown"
+
+                Text(
+                    text = "ROMULIST",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.7f), blurRadius = 16f)
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "v$appVersion",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green.copy(alpha = 0.7f)
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
+                    color = Color.Green.copy(alpha = 0.5f)
+                )
+
                 val osVersion = android.os.Build.VERSION.RELEASE
                 val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
                 val arch = if (is64Bit) "64-bit" else "32-bit"
