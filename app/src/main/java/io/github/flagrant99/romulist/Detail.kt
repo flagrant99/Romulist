@@ -13,7 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
+import android.content.res.Configuration
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +53,8 @@ fun Detail(
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val firstIntentFocusRequester = remember { FocusRequester() }
 
     var configSource by remember { mutableStateOf<String?>(null) }
@@ -91,197 +100,269 @@ fun Detail(
         if (romulistConfig?.systemConfig != null) {
             val system = romulistConfig.systemConfig
 
-            if (selectedFile != null) {
-                Text(
-                    text = "${selectedFile.name}",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                    color = Color.Green
-                )
+            if (isLandscape) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        InfoSection(
+                            system,
+                            selectedFile,
+                            displayConfigSource,
+                            firstIntentFocusRequester,
+                            context,
+                            romulistConfig,
+                            onBack
+                        )
+                    }
+
+                    VerticalDivider(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(horizontal = 16.dp),
+                        color = Color.Green.copy(alpha = 0.3f)
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        MediaSection(system, configSource, selectedFile)
+                    }
+                }
             } else {
-                Text(
-                    text = "No file selected",
-                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                    color = Color.Red.copy(alpha = 0.7f)
-                )
-            }
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = Color.Green.copy(alpha = 0.3f)
-            )
-
-            Text(
-                text = "INTENTS",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontFamily = FontFamily.Monospace,
-                    shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
-                ),
-                color = Color.Green
-            )
-
-            Text(
-                text = "System: ${system.name}",
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                color = Color.Green
-            )
-
-            Text(
-                text = "Source: $displayConfigSource",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
-                ),
-                color = Color.Green,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
-
-            allIntents.forEachIndexed { index, intent ->
-                var isFocused by remember { mutableStateOf(false) }
-                val isMainIntent = intent == system.mainIntent
-                val isEnabled = selectedFile != null
-
-                val displayName = intent.name.ifBlank { "LAUNCH" }
-
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(if (index == 0) firstIntentFocusRequester else remember { FocusRequester() })
-                        .onFocusChanged { isFocused = it.isFocused }
-                        .focusable()
-                        .onKeyEvent { keyEvent ->
-                            if (keyEvent.type == KeyEventType.KeyUp) {
-                                when (keyEvent.nativeKeyEvent.keyCode) {
-                                    KeyEvent.KEYCODE_BUTTON_B,
-                                    KeyEvent.KEYCODE_DPAD_CENTER,
-                                    KeyEvent.KEYCODE_ENTER -> {
-                                        if (isEnabled) {
-                                            EmulatorNavigator.launchGame(
-                                                context = context,
-                                                filePath = selectedFile?.absolutePath ?: "",
-                                                config = romulistConfig,
-                                                preferredIntent = intent
-                                            )
-                                        }
-                                        true
-                                    }
-                                    KeyEvent.KEYCODE_BUTTON_A -> {
-                                        onBack()
-                                        true
-                                    }
-                                    else -> false
-                                }
-                            } else false
-                        }
-                        .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
-                        .clickable(enabled = isEnabled) {
-                            EmulatorNavigator.launchGame(
-                                context = context,
-                                filePath = selectedFile?.absolutePath ?: "",
-                                config = romulistConfig,
-                                preferredIntent = intent
-                            )
-                        }
-                        .padding(16.dp)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
-                        text = if (isMainIntent) "[ $displayName ]" else displayName,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace,
-                            shadow = Shadow(
-                                color = Color.Green.copy(alpha = 0.5f),
-                                offset = Offset(0f, 0f),
-                                blurRadius = 12f
-                            )
-                        ),
-                        color = if (isEnabled) Color.Green else Color.DarkGray,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                    InfoSection(
+                        system,
+                        selectedFile,
+                        displayConfigSource,
+                        firstIntentFocusRequester,
+                        context,
+                        romulistConfig,
+                        onBack
                     )
-                }
-            }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = Color.Green.copy(alpha = 0.3f)
-            )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = Color.Green.copy(alpha = 0.3f)
+                    )
 
-            val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-                val marqueeRel = system.media?.marquee ?: return@remember null
-                val configPath = configSource ?: return@remember null
-                File(File(configPath).parentFile, marqueeRel).absolutePath
-            }
-
-            if (mediaMarqueePath != null) {
-                val marqueeFile = remember(mediaMarqueePath, selectedFile) {
-                    if (selectedFile == null) return@remember null
-                    val baseName = selectedFile.nameWithoutExtension
-                    val dir = File(mediaMarqueePath)
-                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                        .map { File(dir, it) }
-                        .firstOrNull { it.exists() }
-                }
-
-                if (marqueeFile != null) {
-                    val bitmap = remember(marqueeFile) {
-                        try {
-                            BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = "Marquee",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp)
-                                .padding(vertical = 8.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-            }
-
-            val mediaScreenPath = remember(system.media?.screen, configSource) {
-                val screenRel = system.media?.screen ?: return@remember null
-                val configPath = configSource ?: return@remember null
-                File(File(configPath).parentFile, screenRel).absolutePath
-            }
-
-            if (mediaScreenPath != null) {
-                val screenshotFile = remember(mediaScreenPath, selectedFile) {
-                    if (selectedFile == null) return@remember null
-                    val baseName = selectedFile.nameWithoutExtension
-                    val dir = File(mediaScreenPath)
-                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                        .map { File(dir, it) }
-                        .firstOrNull { it.exists() }
-                }
-
-                if (screenshotFile != null) {
-                    val bitmap = remember(screenshotFile) {
-                        try {
-                            BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = "Screenshot",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .padding(vertical = 8.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
+                    MediaSection(system, configSource, selectedFile)
                 }
             }
         }
     }
 }
+
+@Composable
+private fun InfoSection(
+    system: EmulatorNavigator.FolderConfig,
+    selectedFile: File?,
+    displayConfigSource: String,
+    firstIntentFocusRequester: FocusRequester,
+    context: android.content.Context,
+    romulistConfig: EmulatorNavigator.RomulistConfig?,
+    onBack: () -> Unit
+) {
+    if (selectedFile != null) {
+        Text(
+            text = "${selectedFile.name}",
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+            color = Color.Green
+        )
+    } else {
+        Text(
+            text = "No file selected",
+            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+            color = Color.Red.copy(alpha = 0.7f)
+        )
+    }
+
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 8.dp),
+        color = Color.Green.copy(alpha = 0.3f)
+    )
+
+    Text(
+        text = "INTENTS",
+        style = MaterialTheme.typography.labelLarge.copy(
+            fontFamily = FontFamily.Monospace,
+            shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
+        ),
+        color = Color.Green
+    )
+
+    Text(
+        text = "System: ${system.name}",
+        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+        color = Color.Green
+    )
+
+    Text(
+        text = "Source: $displayConfigSource",
+        style = MaterialTheme.typography.bodySmall.copy(
+            fontFamily = FontFamily.Monospace,
+            shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+        ),
+        color = Color.Green,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
+
+    val allIntents = listOfNotNull(system.mainIntent) + system.altIntents
+
+    allIntents.forEachIndexed { index, intent ->
+        var isFocused by remember { mutableStateOf(false) }
+        val isMainIntent = intent == system.mainIntent
+        val isEnabled = selectedFile != null
+
+        val displayName = intent.name.ifBlank { "LAUNCH" }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(if (index == 0) firstIntentFocusRequester else remember { FocusRequester() })
+                .onFocusChanged { isFocused = it.isFocused }
+                .focusable()
+                .onKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyUp) {
+                        when (keyEvent.nativeKeyEvent.keyCode) {
+                            KeyEvent.KEYCODE_BUTTON_B,
+                            KeyEvent.KEYCODE_DPAD_CENTER,
+                            KeyEvent.KEYCODE_ENTER -> {
+                                if (isEnabled) {
+                                    EmulatorNavigator.launchGame(
+                                        context = context,
+                                        filePath = selectedFile?.absolutePath ?: "",
+                                        config = romulistConfig,
+                                        preferredIntent = intent
+                                    )
+                                }
+                                true
+                            }
+                            KeyEvent.KEYCODE_BUTTON_A -> {
+                                onBack()
+                                true
+                            }
+                            else -> false
+                        }
+                    } else false
+                }
+                .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                .clickable(enabled = isEnabled) {
+                    EmulatorNavigator.launchGame(
+                        context = context,
+                        filePath = selectedFile?.absolutePath ?: "",
+                        config = romulistConfig,
+                        preferredIntent = intent
+                    )
+                }
+                .padding(16.dp)
+        ) {
+            Text(
+                text = if (isMainIntent) "[ $displayName ]" else displayName,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    shadow = Shadow(
+                        color = Color.Green.copy(alpha = 0.5f),
+                        offset = Offset(0f, 0f),
+                        blurRadius = 12f
+                    )
+                ),
+                color = if (isEnabled) Color.Green else Color.DarkGray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+private fun MediaSection(
+    system: EmulatorNavigator.FolderConfig,
+    configSource: String?,
+    selectedFile: File?
+) {
+    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
+        val marqueeRel = system.media?.marquee ?: return@remember null
+        val configPath = configSource ?: return@remember null
+        File(File(configPath).parentFile, marqueeRel).absolutePath
+    }
+
+    if (mediaMarqueePath != null) {
+        val marqueeFile = remember(mediaMarqueePath, selectedFile) {
+            if (selectedFile == null) return@remember null
+            val baseName = selectedFile.nameWithoutExtension
+            val dir = File(mediaMarqueePath)
+            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                .map { File(dir, it) }
+                .firstOrNull { it.exists() }
+        }
+
+        if (marqueeFile != null) {
+            val bitmap = remember(marqueeFile) {
+                try {
+                    BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = "Marquee",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(vertical = 8.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
+    }
+
+    val mediaScreenPath = remember(system.media?.screen, configSource) {
+        val screenRel = system.media?.screen ?: return@remember null
+        val configPath = configSource ?: return@remember null
+        File(File(configPath).parentFile, screenRel).absolutePath
+    }
+
+    if (mediaScreenPath != null) {
+        val screenshotFile = remember(mediaScreenPath, selectedFile) {
+            if (selectedFile == null) return@remember null
+            val baseName = selectedFile.nameWithoutExtension
+            val dir = File(mediaScreenPath)
+            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                .map { File(dir, it) }
+                .firstOrNull { it.exists() }
+        }
+
+        if (screenshotFile != null) {
+            val bitmap = remember(screenshotFile) {
+                try {
+                    BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = "Screenshot",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(vertical = 8.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
+    }
+}
+
