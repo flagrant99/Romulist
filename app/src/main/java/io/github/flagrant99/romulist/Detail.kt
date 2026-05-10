@@ -88,22 +88,12 @@ fun Detail(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "FILE",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontFamily = FontFamily.Monospace,
-                shadow = Shadow(Color.Green.copy(alpha = 0.7f), blurRadius = 16f)
-            ),
-            color = Color.Green,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
         if (romulistConfig?.systemConfig != null) {
             val system = romulistConfig.systemConfig
 
             if (selectedFile != null) {
                 Text(
-                    text = "Selected: ${selectedFile.name}",
+                    text = "File: ${selectedFile.name}",
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
@@ -128,11 +118,6 @@ fun Detail(
             }
 
             if (mediaScreenPath != null) {
-                Text(
-                    text = "Screen: $mediaScreenPath",
-                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                    color = Color.Green
-                )
 
                 val screenshotFile = remember(mediaScreenPath, selectedFile) {
                     if (selectedFile == null) return@remember null
