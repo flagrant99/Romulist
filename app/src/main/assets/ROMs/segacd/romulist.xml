@@ -7,11 +7,11 @@
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
 		 <media>
-			<cover>m/cover</cover>
-			<marquee>m/marquee</marquee>
-			<mixart>m/mixart</mixart>
-			<screen>m/screen</screen>
-			<video>m/video</video>
+			<cover type="relative">m/cover</cover>
+			<marquee type="relative">m/marquee</marquee>
+			<mixart type="relative">m/mixart</mixart>
+			<screen type="relative">m/screen</screen>
+			<video type="relative">m/video</video>
 		 </media>
 	</folder>
 	<exclusions>
