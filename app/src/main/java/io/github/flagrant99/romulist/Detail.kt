@@ -148,7 +148,7 @@ fun Detail(
                 val isMainIntent = intent == system.mainIntent
                 val isEnabled = selectedFile != null
 
-                val displayName = intent.name.ifBlank { "LAUNCH" }.uppercase()
+                val displayName = intent.name.ifBlank { "LAUNCH" }
 
                 Column(
                     modifier = Modifier
