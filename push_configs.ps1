@@ -1,6 +1,6 @@
 param (
-    [string]$DevicePath = "/storage/AC50-F7EF/ROMs",
-    [string]$Serial = "HA1Q3MLF"
+    [string]$DevicePath = "",
+    [string]$Serial = ""
 )
 
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
@@ -20,10 +20,11 @@ function Get-Devices {
 $connectedDevices = Get-Devices
 
 if ($connectedDevices.Count -eq 0) {
-    Write-Error "No devices connected. Please connect your tablet."
+    Write-Error "No devices connected. Please connect your device and enable USB debugging."
     exit 1
 }
 
+# Determine target serial
 $targetSerial = ""
 if ($Serial -ne "") {
     if ($connectedDevices -contains $Serial) {
@@ -33,18 +34,32 @@ if ($Serial -ne "") {
         Write-Host "Connected devices: $($connectedDevices -join ', ')"
         exit 1
     }
-} elseif ($connectedDevices.Count -gt 1) {
-    Write-Warning "Multiple devices detected: $($connectedDevices -join ', ')"
-    Write-Host "Please run the script again with -Serial <device_id>"
-    Write-Host "Example: .\push_configs.ps1 -Serial $($connectedDevices[0])"
-    exit 1
 } else {
     $targetSerial = $connectedDevices[0]
+    if ($connectedDevices.Count -gt 1) {
+        Write-Warning "Multiple devices detected. Using the first one: $targetSerial"
+    }
 }
 
 Write-Host "Targeting device: $targetSerial"
 
-$adbCmd = { & $adb -s $targetSerial $args }
+# Auto-detect DevicePath if not provided
+if ($DevicePath -eq "") {
+    Write-Host "Auto-detecting storage path..."
+    $storageItems = & $adb -s $targetSerial shell ls /storage
+    # Look for SD Card pattern (e.g., 3636-3939 or AC50-F7EF)
+    $sdCard = $storageItems | ForEach-Object { $_.Trim() } | Where-Object { $_ -match "^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$" } | Select-Object -First 1
+
+    if ($sdCard) {
+        $DevicePath = "/storage/$sdCard/ROMs"
+        Write-Host "Detected SD Card: $DevicePath"
+    } else {
+        $DevicePath = "/storage/emulated/0/ROMs"
+        Write-Host "No SD Card detected, defaulting to internal storage: $DevicePath"
+    }
+} else {
+    Write-Host "Using specified DevicePath: $DevicePath"
+}
 
 # Base source directory
 $SourceBase = Join-Path $PSScriptRoot "app/src/main/assets/ROMs"
