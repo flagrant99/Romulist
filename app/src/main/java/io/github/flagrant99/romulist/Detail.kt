@@ -289,24 +289,24 @@ internal fun DetailMediaSection(
     configSource: String?,
     selectedFile: File?
 ) {
-    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-        system.media?.marquee?.resolvePath(configSource)
+    val mediaMixartPath = remember(system.media?.mixart, configSource) {
+        system.media?.mixart?.resolvePath(configSource)
     }
 
-    if (mediaMarqueePath != null) {
-        val marqueeFile = remember(mediaMarqueePath, selectedFile) {
+    if (mediaMixartPath != null) {
+        val mixartFile = remember(mediaMixartPath, selectedFile) {
             if (selectedFile == null) return@remember null
             val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaMarqueePath)
+            val dir = File(mediaMixartPath)
             listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
                 .map { File(dir, it) }
                 .firstOrNull { it.exists() }
         }
 
-        if (marqueeFile != null) {
-            val bitmap = remember(marqueeFile) {
+        if (mixartFile != null) {
+            val bitmap = remember(mixartFile) {
                 try {
-                    BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
+                    BitmapFactory.decodeFile(mixartFile.absolutePath)?.asImageBitmap()
                 } catch (_: Exception) {
                     null
                 }
@@ -314,7 +314,7 @@ internal fun DetailMediaSection(
             if (bitmap != null) {
                 Image(
                     bitmap = bitmap,
-                    contentDescription = "Marquee",
+                    contentDescription = "Mixart",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
