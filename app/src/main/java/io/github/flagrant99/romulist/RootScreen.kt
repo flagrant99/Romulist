@@ -46,6 +46,7 @@ fun RootScreen(
     context: Context,
     onVolumeClick: (File) -> Unit,
     onBack: () -> Unit,
+    onExit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val firstVolumeFocusRequester = remember { FocusRequester() }
@@ -214,6 +215,57 @@ fun RootScreen(
                 )
                 Text(
                     text = "Total: $totalStr | Free: $freeStr",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                    ),
+                    color = Color.Green
+                )
+            }
+        }
+
+        item {
+            var isFocused by remember { mutableStateOf(false) }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused = it.isFocused }
+                    .focusable()
+                    .onKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                KeyEvent.KEYCODE_BUTTON_B,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
+                                KeyEvent.KEYCODE_ENTER -> {
+                                    onExit()
+                                    true
+                                }
+                                KeyEvent.KEYCODE_BUTTON_A -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
+                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .clickable { onExit() }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "EXIT",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(
+                            color = Color.Green.copy(alpha = 0.5f),
+                            offset = Offset(0f, 0f),
+                            blurRadius = 12f
+                        )
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Close Application",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)

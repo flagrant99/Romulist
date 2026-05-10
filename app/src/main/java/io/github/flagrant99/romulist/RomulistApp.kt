@@ -1,5 +1,6 @@
 package io.github.flagrant99.romulist
 
+import android.app.Activity
 import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.os.storage.StorageManager
@@ -256,7 +257,8 @@ fun RomulistApp()
                                 storageStatsManager = storageStatsManager,
                                 context = context,
                                 onVolumeClick = { folder -> selectedFolder = folder },
-                                onBack = handleBack
+                                onBack = handleBack,
+                                onExit = { (context as? Activity)?.finish() }
                             )
                         }
                     }

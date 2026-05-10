@@ -239,7 +239,7 @@ private fun InfoSection(
                                 if (isEnabled) {
                                     EmulatorNavigator.launchGame(
                                         context = context,
-                                        filePath = selectedFile?.absolutePath ?: "",
+                                        filePath = selectedFile.absolutePath ?: "",
                                         config = romulistConfig,
                                         preferredIntent = intent
                                     )
