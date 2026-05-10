@@ -289,42 +289,6 @@ internal fun DetailMediaSection(
     configSource: String?,
     selectedFile: File?
 ) {
-    val mediaMixartPath = remember(system.media?.mixart, configSource) {
-        system.media?.mixart?.resolvePath(configSource)
-    }
-
-    if (mediaMixartPath != null) {
-        val mixartFile = remember(mediaMixartPath, selectedFile) {
-            if (selectedFile == null) return@remember null
-            val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaMixartPath)
-            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                .map { File(dir, it) }
-                .firstOrNull { it.exists() }
-        }
-
-        if (mixartFile != null) {
-            val bitmap = remember(mixartFile) {
-                try {
-                    BitmapFactory.decodeFile(mixartFile.absolutePath)?.asImageBitmap()
-                } catch (_: Exception) {
-                    null
-                }
-            }
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Mixart",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(vertical = 8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-        }
-    }
-
     val mediaBoxartPath = remember(system.media?.cover, configSource) {
         system.media?.cover?.resolvePath(configSource)
     }
@@ -353,6 +317,43 @@ internal fun DetailMediaSection(
                     contentDescription = "Boxart",
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(300.dp)
+                        .padding(vertical = 8.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
+    }
+
+
+    val mediaMixartPath = remember(system.media?.mixart, configSource) {
+        system.media?.mixart?.resolvePath(configSource)
+    }
+
+    if (mediaMixartPath != null) {
+        val mixartFile = remember(mediaMixartPath, selectedFile) {
+            if (selectedFile == null) return@remember null
+            val baseName = selectedFile.nameWithoutExtension
+            val dir = File(mediaMixartPath)
+            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                .map { File(dir, it) }
+                .firstOrNull { it.exists() }
+        }
+
+        if (mixartFile != null) {
+            val bitmap = remember(mixartFile) {
+                try {
+                    BitmapFactory.decodeFile(mixartFile.absolutePath)?.asImageBitmap()
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = "Mixart",
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .height(200.dp)
                         .padding(vertical = 8.dp),
                     contentScale = ContentScale.Fit
@@ -360,5 +361,6 @@ internal fun DetailMediaSection(
             }
         }
     }
+
 }
 
