@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,6 +19,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,12 +40,21 @@ fun ListFiles(
     currentPath: File,
     favoritePath: String?,
     selectedFile: File?,
+    listState: LazyListState = rememberLazyListState(),
     onPathChange: (File) -> Unit,
     onFileSelect: (File) -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
     var refreshToggle by remember { mutableStateOf(false) }
+
+    var lastPath by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(currentPath) {
+        if (lastPath != currentPath.absolutePath) {
+            listState.scrollToItem(0)
+            lastPath = currentPath.absolutePath
+        }
+    }
 
     // Copy romulist.xml from assets if it matches the structure under favorite path
     LaunchedEffect(currentPath, favoritePath) {
@@ -125,10 +137,10 @@ fun ListFiles(
     var isScanning by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf(true) }
 
     val firstItemFocusRequester = remember { FocusRequester() }
-    val listState = rememberLazyListState()
+    val selectedItemFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(currentPath) {
-        listState.scrollToItem(0)
+        // No-op here, handled by lastPath check above
     }
 
     LaunchedEffect(currentPath, allowedExtensions, nameExclusions) {
@@ -151,9 +163,17 @@ fun ListFiles(
         }
     }
 
-    LaunchedEffect(files, isScanning) {
+    LaunchedEffect(files, isScanning, selectedFile) {
         if (!isScanning && files.isNotEmpty()) {
-            firstItemFocusRequester.requestFocus()
+            val index = files.indexOfFirst { it.absolutePath == selectedFile?.absolutePath }
+            if (index != -1) {
+                listState.scrollToItem(index)
+                // We need to wait for the item to be composed to request focus if it's not the first item
+                // or use a different mechanism. For now, let's try to focus it if it's visible.
+                selectedItemFocusRequester.requestFocus()
+            } else {
+                firstItemFocusRequester.requestFocus()
+            }
         }
     }
 
@@ -214,13 +234,18 @@ fun ListFiles(
                 state = listState
             ) {
                 itemsIndexed(files) { index, file ->
+                    val isItemSelected = file.absolutePath == selectedFile?.absolutePath
                     FileRow(
                         name = file.name,
                         isDirectory = file.isDirectory,
                         onBack = onBack,
-                        isSelected = file == selectedFile,
+                        isSelected = isItemSelected,
                         showIcon = showIcons,
-                        focusRequester = if (index == 0) firstItemFocusRequester else remember { FocusRequester() },
+                        focusRequester = when {
+                            isItemSelected -> selectedItemFocusRequester
+                            index == 0 -> firstItemFocusRequester
+                            else -> remember { FocusRequester() }
+                        },
                         onFocus = {
                             if (!file.isDirectory) {
                                 onFileSelect(file)

@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -87,6 +88,8 @@ fun RomulistApp()
         }
 
         var isInitialized by rememberSaveable { mutableStateOf(false) }
+
+        val listState = rememberLazyListState()
 
         val handleHome = {
             if (favoriteFolder == null) {
@@ -239,6 +242,7 @@ fun RomulistApp()
                                 currentPath = selectedFolder!!,
                                 favoritePath = favoriteFolder,
                                 selectedFile = selectedFile,
+                                listState = listState,
                                 onPathChange = { 
                                     selectedFolder = it 
                                     selectedFile = null
