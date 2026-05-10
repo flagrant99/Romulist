@@ -395,7 +395,9 @@ internal fun ListMediaSection(
     ) {
         // Layer 0: Video or Screenshot (Aligned to BOTTOM)
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 24.dp), // Push down to avoid marquee overlap
             contentAlignment = Alignment.BottomCenter
         ) {
             if (showVideo && videoFile != null) {
