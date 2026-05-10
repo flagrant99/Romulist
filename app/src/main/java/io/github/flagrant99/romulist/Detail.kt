@@ -4,17 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -292,75 +293,73 @@ internal fun DetailMediaSection(
     val mediaBoxartPath = remember(system.media?.cover, configSource) {
         system.media?.cover?.resolvePath(configSource)
     }
-
-    if (mediaBoxartPath != null) {
-        val boxartFile = remember(mediaBoxartPath, selectedFile) {
-            if (selectedFile == null) return@remember null
-            val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaBoxartPath)
-            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                .map { File(dir, it) }
-                .firstOrNull { it.exists() }
-        }
-
-        if (boxartFile != null) {
-            val bitmap = remember(boxartFile) {
-                try {
-                    BitmapFactory.decodeFile(boxartFile.absolutePath)?.asImageBitmap()
-                } catch (_: Exception) {
-                    null
-                }
-            }
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Boxart",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .padding(vertical = 8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
+    val boxartFile = remember(mediaBoxartPath, selectedFile) {
+        if (selectedFile == null || mediaBoxartPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaBoxartPath)
+        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+    }
+    val boxartBitmap = remember(boxartFile) {
+        try {
+            boxartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
         }
     }
-
 
     val mediaMixartPath = remember(system.media?.mixart, configSource) {
         system.media?.mixart?.resolvePath(configSource)
     }
-
-    if (mediaMixartPath != null) {
-        val mixartFile = remember(mediaMixartPath, selectedFile) {
-            if (selectedFile == null) return@remember null
-            val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaMixartPath)
-            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                .map { File(dir, it) }
-                .firstOrNull { it.exists() }
-        }
-
-        if (mixartFile != null) {
-            val bitmap = remember(mixartFile) {
-                try {
-                    BitmapFactory.decodeFile(mixartFile.absolutePath)?.asImageBitmap()
-                } catch (_: Exception) {
-                    null
-                }
-            }
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Mixart",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(vertical = 8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
+    val mixartFile = remember(mediaMixartPath, selectedFile) {
+        if (selectedFile == null || mediaMixartPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaMixartPath)
+        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+    }
+    val mixartBitmap = remember(mixartFile) {
+        try {
+            mixartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
         }
     }
 
+    if (boxartBitmap != null || mixartBitmap != null) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                if (boxartBitmap != null) {
+                    Image(
+                        bitmap = boxartBitmap,
+                        contentDescription = "Boxart",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                if (mixartBitmap != null) {
+                    Image(
+                        bitmap = mixartBitmap,
+                        contentDescription = "Mixart",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+        }
+    }
 }
 
