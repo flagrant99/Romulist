@@ -17,12 +17,17 @@ object EmulatorNavigator {
         val nameExclusions: List<String> = emptyList()
     )
     
+    data class MediaItem(
+        val path: String?,
+        val type: String = "relative"
+    )
+
     data class MediaConfig(
-        val cover: String? = null,
-        val marquee: String? = null,
-        val mixart: String? = null,
-        val screen: String? = null,
-        val video: String? = null
+        val cover: MediaItem? = null,
+        val marquee: MediaItem? = null,
+        val mixart: MediaItem? = null,
+        val screen: MediaItem? = null,
+        val video: MediaItem? = null
     )
     
     data class FolderConfig(
@@ -121,13 +126,15 @@ object EmulatorNavigator {
                             "media" -> inMedia = true
                             "cover", "marquee", "mixart", "screen", "video" -> {
                                 if (inMedia) {
+                                    val typeAttr = parser.getAttributeValue(null, "type") ?: "relative"
                                     val text = parser.nextText()
+                                    val mediaItem = MediaItem(text, typeAttr)
                                     currentMedia = when (tagName) {
-                                        "cover" -> (currentMedia ?: MediaConfig()).copy(cover = text)
-                                        "marquee" -> (currentMedia ?: MediaConfig()).copy(marquee = text)
-                                        "mixart" -> (currentMedia ?: MediaConfig()).copy(mixart = text)
-                                        "screen" -> (currentMedia ?: MediaConfig()).copy(screen = text)
-                                        "video" -> (currentMedia ?: MediaConfig()).copy(video = text)
+                                        "cover" -> (currentMedia ?: MediaConfig()).copy(cover = mediaItem)
+                                        "marquee" -> (currentMedia ?: MediaConfig()).copy(marquee = mediaItem)
+                                        "mixart" -> (currentMedia ?: MediaConfig()).copy(mixart = mediaItem)
+                                        "screen" -> (currentMedia ?: MediaConfig()).copy(screen = mediaItem)
+                                        "video" -> (currentMedia ?: MediaConfig()).copy(video = mediaItem)
                                         else -> currentMedia
                                     }
                                 }
