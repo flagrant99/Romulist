@@ -93,8 +93,8 @@ fun Detail(
 
             if (selectedFile != null) {
                 Text(
-                    text = "File: ${selectedFile.name}",
-                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    text = "${selectedFile.name}",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
             } else {
@@ -105,11 +105,44 @@ fun Detail(
                 )
             }
 
-            Text(
-                text = "System: ${system.name}",
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                color = Color.Green
-            )
+
+            val mediaMarqueePath = remember(system.media?.marquee, configSource) {
+                val marqueeRel = system.media?.marquee ?: return@remember null
+                val configPath = configSource ?: return@remember null
+                File(File(configPath).parentFile, marqueeRel).absolutePath
+            }
+
+            if (mediaMarqueePath != null) {
+                val marqueeFile = remember(mediaMarqueePath, selectedFile) {
+                    if (selectedFile == null) return@remember null
+                    val baseName = selectedFile.nameWithoutExtension
+                    val dir = File(mediaMarqueePath)
+                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                        .map { File(dir, it) }
+                        .firstOrNull { it.exists() }
+                }
+
+                if (marqueeFile != null) {
+                    val bitmap = remember(marqueeFile) {
+                        try {
+                            BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = "Marquee",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .padding(vertical = 8.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+            }
 
             val mediaScreenPath = remember(system.media?.screen, configSource) {
                 val screenRel = system.media?.screen ?: return@remember null
@@ -162,6 +195,12 @@ fun Detail(
                     fontFamily = FontFamily.Monospace,
                     shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
                 ),
+                color = Color.Green
+            )
+
+            Text(
+                text = "System: ${system.name}",
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                 color = Color.Green
             )
 
