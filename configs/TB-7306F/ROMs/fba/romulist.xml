@@ -1,0 +1,22 @@
+<romulist>
+	<folder name="Final Burn Alpha" extensions="zip">
+		  <intent name="fbneo" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		    <action name="android.intent.action.MAIN" />
+		    <extra name="ROM" value="$FILE_PATH" />
+		    <extra name="LIBRETRO" value="$DATA_DIR/cores/fbneo_libretro_android.so" />
+		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		  </intent>
+		 <media>
+			<cover type="relative">m/cover</cover>
+			<marquee type="relative">m/marquee</marquee>
+			<mixart type="relative">m/mixart</mixart>
+			<screen type="relative">m/screen</screen>
+			<video type="relative">m/video</video>
+		 </media>
+	</folder>
+	<exclusions>
+		<folder name="m" />
+		<folder name="r" />
+		<folder name="u" />
+	</exclusions>
+</romulist>
