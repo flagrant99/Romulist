@@ -347,78 +347,25 @@ internal fun ListMediaSection(
         }
     }
 
-    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-        system.media?.marquee?.resolvePath(configSource)
-    }
-
-    if (mediaMarqueePath != null) {
-        val marqueeFile = remember(mediaMarqueePath, selectedFile) {
-            if (selectedFile == null) return@remember null
-            val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaMarqueePath)
-            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                .map { File(dir, it) }
-                .firstOrNull { it.exists() }
+    Column {
+        val mediaMarqueePath = remember(system.media?.marquee, configSource) {
+            system.media?.marquee?.resolvePath(configSource)
         }
 
-        if (marqueeFile != null) {
-            val bitmap = remember(marqueeFile) {
-                try {
-                    BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
-                } catch (_: Exception) {
-                    null
-                }
-            }
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Marquee",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(vertical = 8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-        }
-    }
-
-    if (showVideo && videoFile != null) {
-        AndroidView(
-            factory = { ctx ->
-                VideoView(ctx).apply {
-                    setVideoURI(Uri.fromFile(videoFile))
-                    setOnPreparedListener { mp ->
-                        mp.isLooping = true
-                        // Optional: Mute video if desired, but user didn't ask
-                    }
-                    start()
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .padding(vertical = 8.dp)
-        )
-    } else {
-        val mediaScreenPath = remember(system.media?.screen, configSource) {
-            system.media?.screen?.resolvePath(configSource)
-        }
-
-        if (mediaScreenPath != null) {
-            val screenshotFile = remember(mediaScreenPath, selectedFile) {
+        if (mediaMarqueePath != null) {
+            val marqueeFile = remember(mediaMarqueePath, selectedFile) {
                 if (selectedFile == null) return@remember null
                 val baseName = selectedFile.nameWithoutExtension
-                val dir = File(mediaScreenPath)
+                val dir = File(mediaMarqueePath)
                 listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
                     .map { File(dir, it) }
                     .firstOrNull { it.exists() }
             }
 
-            if (screenshotFile != null) {
-                val bitmap = remember(screenshotFile) {
+            if (marqueeFile != null) {
+                val bitmap = remember(marqueeFile) {
                     try {
-                        BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                        BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
                     } catch (_: Exception) {
                         null
                     }
@@ -426,13 +373,67 @@ internal fun ListMediaSection(
                 if (bitmap != null) {
                     Image(
                         bitmap = bitmap,
-                        contentDescription = "Screenshot",
+                        contentDescription = "Marquee",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp)
+                            .height(100.dp)
                             .padding(vertical = 8.dp),
                         contentScale = ContentScale.Fit
                     )
+                }
+            }
+        }
+
+        if (showVideo && videoFile != null) {
+            AndroidView(
+                factory = { ctx ->
+                    VideoView(ctx).apply {
+                        setVideoURI(Uri.fromFile(videoFile))
+                        setOnPreparedListener { mp ->
+                            mp.isLooping = true
+                        }
+                        start()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(vertical = 8.dp)
+            )
+        } else {
+            val mediaScreenPath = remember(system.media?.screen, configSource) {
+                system.media?.screen?.resolvePath(configSource)
+            }
+
+            if (mediaScreenPath != null) {
+                val screenshotFile = remember(mediaScreenPath, selectedFile) {
+                    if (selectedFile == null) return@remember null
+                    val baseName = selectedFile.nameWithoutExtension
+                    val dir = File(mediaScreenPath)
+                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                        .map { File(dir, it) }
+                        .firstOrNull { it.exists() }
+                }
+
+                if (screenshotFile != null) {
+                    val bitmap = remember(screenshotFile) {
+                        try {
+                            BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = "Screenshot",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp)
+                                .padding(vertical = 8.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             }
         }
