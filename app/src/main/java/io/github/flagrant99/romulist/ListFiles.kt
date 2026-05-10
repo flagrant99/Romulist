@@ -347,43 +347,53 @@ internal fun ListMediaSection(
         }
     }
 
-    Column {
-        val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-            system.media?.marquee?.resolvePath(configSource)
+    // 1. Resolve Marquee
+    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
+        system.media?.marquee?.resolvePath(configSource)
+    }
+    val marqueeBitmap = remember(mediaMarqueePath, selectedFile) {
+        if (selectedFile == null || mediaMarqueePath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaMarqueePath)
+        val file = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+        
+        try {
+            file?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
         }
+    }
 
-        if (mediaMarqueePath != null) {
-            val marqueeFile = remember(mediaMarqueePath, selectedFile) {
-                if (selectedFile == null) return@remember null
-                val baseName = selectedFile.nameWithoutExtension
-                val dir = File(mediaMarqueePath)
-                listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                    .map { File(dir, it) }
-                    .firstOrNull { it.exists() }
-            }
-
-            if (marqueeFile != null) {
-                val bitmap = remember(marqueeFile) {
-                    try {
-                        BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
-                    } catch (_: Exception) {
-                        null
-                    }
-                }
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap,
-                        contentDescription = "Marquee",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .padding(vertical = 8.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
-            }
+    // 2. Resolve Screenshot
+    val mediaScreenPath = remember(system.media?.screen, configSource) {
+        system.media?.screen?.resolvePath(configSource)
+    }
+    val screenshotBitmap = remember(mediaScreenPath, selectedFile) {
+        if (selectedFile == null || mediaScreenPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaScreenPath)
+        val file = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+        
+        try {
+            file?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
         }
+    }
 
+    // Final Fix: Use a Box to overlay Marquee on top of the media area
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Layer 0: Video or Screenshot (Background)
         if (showVideo && videoFile != null) {
             AndroidView(
                 factory = { ctx ->
@@ -392,50 +402,35 @@ internal fun ListMediaSection(
                         setOnPreparedListener { mp ->
                             mp.isLooping = true
                         }
+                        // Ensure VideoView doesn't cover overlaying Compose views
+                        setZOrderMediaOverlay(true) 
                         start()
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .padding(vertical = 8.dp)
+                modifier = Modifier.fillMaxSize()
             )
-        } else {
-            val mediaScreenPath = remember(system.media?.screen, configSource) {
-                system.media?.screen?.resolvePath(configSource)
-            }
+        } else if (screenshotBitmap != null) {
+            Image(
+                bitmap = screenshotBitmap,
+                contentDescription = "Screenshot",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+        }
 
-            if (mediaScreenPath != null) {
-                val screenshotFile = remember(mediaScreenPath, selectedFile) {
-                    if (selectedFile == null) return@remember null
-                    val baseName = selectedFile.nameWithoutExtension
-                    val dir = File(mediaScreenPath)
-                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                        .map { File(dir, it) }
-                        .firstOrNull { it.exists() }
-                }
-
-                if (screenshotFile != null) {
-                    val bitmap = remember(screenshotFile) {
-                        try {
-                            BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = "Screenshot",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp)
-                                .padding(vertical = 8.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-            }
+        // Layer 1: Marquee (Foreground / Overlay)
+        // Positioned at the top to keep it "above" the video content
+        if (marqueeBitmap != null) {
+            Image(
+                bitmap = marqueeBitmap,
+                contentDescription = "Marquee",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(8.dp),
+                contentScale = ContentScale.Fit
+            )
         }
     }
 }
