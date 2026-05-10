@@ -21,7 +21,7 @@
 		    </intent>
 		 </alt_intents>
 		 <media>
-			<cover type="relative">m/cover</cover>
+			<cover type="fixed">/storage/emulated/0/ROMs/megadrive/m/cover</cover>
 			<marquee type="relative">m/marquee</marquee>
 			<mixart type="relative">m/mixart</mixart>
 			<screen type="relative">m/screen</screen>
