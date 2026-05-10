@@ -393,33 +393,41 @@ internal fun ListMediaSection(
             .padding(vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Layer 0: Video or Screenshot (Background)
-        if (showVideo && videoFile != null) {
-            AndroidView(
-                factory = { ctx ->
-                    VideoView(ctx).apply {
-                        setVideoURI(Uri.fromFile(videoFile))
-                        setOnPreparedListener { mp ->
-                            mp.isLooping = true
+        // Layer 0: Video or Screenshot (Aligned to BOTTOM)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            if (showVideo && videoFile != null) {
+                AndroidView(
+                    factory = { ctx ->
+                        VideoView(ctx).apply {
+                            setVideoURI(Uri.fromFile(videoFile))
+                            setOnPreparedListener { mp ->
+                                mp.isLooping = true
+                            }
+                            // Ensure VideoView doesn't cover overlaying Compose views
+                            setZOrderMediaOverlay(true) 
+                            start()
                         }
-                        // Ensure VideoView doesn't cover overlaying Compose views
-                        setZOrderMediaOverlay(true) 
-                        start()
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-        } else if (screenshotBitmap != null) {
-            Image(
-                bitmap = screenshotBitmap,
-                contentDescription = "Screenshot",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
-            )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                )
+            } else if (screenshotBitmap != null) {
+                Image(
+                    bitmap = screenshotBitmap,
+                    contentDescription = "Screenshot",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
         }
 
-        // Layer 1: Marquee (Foreground / Overlay)
-        // Positioned at the top to keep it "above" the video content
+        // Layer 1: Marquee (Foreground / Overlay - Aligned to TOP)
         if (marqueeBitmap != null) {
             Image(
                 bitmap = marqueeBitmap,
