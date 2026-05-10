@@ -20,7 +20,14 @@ object EmulatorNavigator {
     data class MediaItem(
         val path: String?,
         val type: String = "relative"
-    )
+    ) {
+        fun resolvePath(configSource: String?): String? {
+            val p = path ?: return null
+            if (type == "fixed") return p
+            val configPath = configSource ?: return null
+            return File(File(configPath).parentFile, p).absolutePath
+        }
+    }
 
     data class MediaConfig(
         val cover: MediaItem? = null,

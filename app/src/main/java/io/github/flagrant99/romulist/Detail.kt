@@ -290,14 +290,7 @@ private fun MediaSection(
     selectedFile: File?
 ) {
     val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-        val marqueeItem = system.media?.marquee ?: return@remember null
-        val path = marqueeItem.path ?: return@remember null
-        if (marqueeItem.type == "fixed") {
-            path
-        } else {
-            val configPath = configSource ?: return@remember null
-            File(File(configPath).parentFile, path).absolutePath
-        }
+        system.media?.marquee?.resolvePath(configSource)
     }
 
     if (mediaMarqueePath != null) {
@@ -333,14 +326,7 @@ private fun MediaSection(
     }
 
     val mediaScreenPath = remember(system.media?.screen, configSource) {
-        val screenItem = system.media?.screen ?: return@remember null
-        val path = screenItem.path ?: return@remember null
-        if (screenItem.type == "fixed") {
-            path
-        } else {
-            val configPath = configSource ?: return@remember null
-            File(File(configPath).parentFile, path).absolutePath
-        }
+        system.media?.screen?.resolvePath(configSource)
     }
 
     if (mediaScreenPath != null) {
