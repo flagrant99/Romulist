@@ -38,6 +38,10 @@ import android.content.res.Configuration
 import io.github.flagrant99.romulist.ui.theme.Black80
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.VideoView
+import android.net.Uri
 import java.io.File
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
@@ -321,6 +325,28 @@ internal fun ListMediaSection(
     configSource: String?,
     selectedFile: File?
 ) {
+    var showVideo by remember(selectedFile) { mutableStateOf(false) }
+
+    val mediaVideoPath = remember(system.media?.video, configSource) {
+        system.media?.video?.resolvePath(configSource)
+    }
+    val videoFile = remember(mediaVideoPath, selectedFile) {
+        if (selectedFile == null || mediaVideoPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaVideoPath)
+        listOf("$baseName.mp4", "$baseName.MP4")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+    }
+
+    LaunchedEffect(selectedFile, videoFile) {
+        showVideo = false
+        if (selectedFile != null && videoFile != null) {
+            delay(5000)
+            showVideo = true
+        }
+    }
+
     val mediaMarqueePath = remember(system.media?.marquee, configSource) {
         system.media?.marquee?.resolvePath(configSource)
     }
@@ -357,38 +383,57 @@ internal fun ListMediaSection(
         }
     }
 
-    val mediaScreenPath = remember(system.media?.screen, configSource) {
-        system.media?.screen?.resolvePath(configSource)
-    }
-
-    if (mediaScreenPath != null) {
-        val screenshotFile = remember(mediaScreenPath, selectedFile) {
-            if (selectedFile == null) return@remember null
-            val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaScreenPath)
-            listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                .map { File(dir, it) }
-                .firstOrNull { it.exists() }
+    if (showVideo && videoFile != null) {
+        AndroidView(
+            factory = { ctx ->
+                VideoView(ctx).apply {
+                    setVideoURI(Uri.fromFile(videoFile))
+                    setOnPreparedListener { mp ->
+                        mp.isLooping = true
+                        // Optional: Mute video if desired, but user didn't ask
+                    }
+                    start()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .padding(vertical = 8.dp)
+        )
+    } else {
+        val mediaScreenPath = remember(system.media?.screen, configSource) {
+            system.media?.screen?.resolvePath(configSource)
         }
 
-        if (screenshotFile != null) {
-            val bitmap = remember(screenshotFile) {
-                try {
-                    BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
-                } catch (_: Exception) {
-                    null
-                }
+        if (mediaScreenPath != null) {
+            val screenshotFile = remember(mediaScreenPath, selectedFile) {
+                if (selectedFile == null) return@remember null
+                val baseName = selectedFile.nameWithoutExtension
+                val dir = File(mediaScreenPath)
+                listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                    .map { File(dir, it) }
+                    .firstOrNull { it.exists() }
             }
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Screenshot",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .padding(vertical = 8.dp),
-                    contentScale = ContentScale.Fit
-                )
+
+            if (screenshotFile != null) {
+                val bitmap = remember(screenshotFile) {
+                    try {
+                        BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "Screenshot",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(vertical = 8.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
         }
     }
