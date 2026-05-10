@@ -6,6 +6,13 @@
 		    <extra name="LIBRETRO" value="$DATA_DIR/cores/snes9x_libretro_android.so" />
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
+		 <media>
+			<cover>m/cover</cover>
+			<marquee>m/marquee</marquee>
+			<mixart>m/mixart</mixart>
+			<screen>m/screen</screen>
+			<video>m/video</video>
+		 </media>
 	</folder>
 	<exclusions>
 		<folder name="m" />
