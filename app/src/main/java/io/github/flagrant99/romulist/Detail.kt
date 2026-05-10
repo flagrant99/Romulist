@@ -105,85 +105,6 @@ fun Detail(
                 )
             }
 
-
-            val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-                val marqueeRel = system.media?.marquee ?: return@remember null
-                val configPath = configSource ?: return@remember null
-                File(File(configPath).parentFile, marqueeRel).absolutePath
-            }
-
-            if (mediaMarqueePath != null) {
-                val marqueeFile = remember(mediaMarqueePath, selectedFile) {
-                    if (selectedFile == null) return@remember null
-                    val baseName = selectedFile.nameWithoutExtension
-                    val dir = File(mediaMarqueePath)
-                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                        .map { File(dir, it) }
-                        .firstOrNull { it.exists() }
-                }
-
-                if (marqueeFile != null) {
-                    val bitmap = remember(marqueeFile) {
-                        try {
-                            BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = "Marquee",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp)
-                                .padding(vertical = 8.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-            }
-
-            val mediaScreenPath = remember(system.media?.screen, configSource) {
-                val screenRel = system.media?.screen ?: return@remember null
-                val configPath = configSource ?: return@remember null
-                File(File(configPath).parentFile, screenRel).absolutePath
-            }
-
-            if (mediaScreenPath != null) {
-
-                val screenshotFile = remember(mediaScreenPath, selectedFile) {
-                    if (selectedFile == null) return@remember null
-                    val baseName = selectedFile.nameWithoutExtension
-                    val dir = File(mediaScreenPath)
-                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                        .map { File(dir, it) }
-                        .firstOrNull { it.exists() }
-                }
-
-                if (screenshotFile != null) {
-                    val bitmap = remember(screenshotFile) {
-                        try {
-                            BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = "Screenshot",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .padding(vertical = 8.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-            }
-
-
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
                 color = Color.Green.copy(alpha = 0.3f)
@@ -278,6 +199,87 @@ fun Detail(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = Color.Green.copy(alpha = 0.3f)
+            )
+
+            val mediaMarqueePath = remember(system.media?.marquee, configSource) {
+                val marqueeRel = system.media?.marquee ?: return@remember null
+                val configPath = configSource ?: return@remember null
+                File(File(configPath).parentFile, marqueeRel).absolutePath
+            }
+
+            if (mediaMarqueePath != null) {
+                val marqueeFile = remember(mediaMarqueePath, selectedFile) {
+                    if (selectedFile == null) return@remember null
+                    val baseName = selectedFile.nameWithoutExtension
+                    val dir = File(mediaMarqueePath)
+                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                        .map { File(dir, it) }
+                        .firstOrNull { it.exists() }
+                }
+
+                if (marqueeFile != null) {
+                    val bitmap = remember(marqueeFile) {
+                        try {
+                            BitmapFactory.decodeFile(marqueeFile.absolutePath)?.asImageBitmap()
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = "Marquee",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .padding(vertical = 8.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+            }
+
+            val mediaScreenPath = remember(system.media?.screen, configSource) {
+                val screenRel = system.media?.screen ?: return@remember null
+                val configPath = configSource ?: return@remember null
+                File(File(configPath).parentFile, screenRel).absolutePath
+            }
+
+            if (mediaScreenPath != null) {
+                val screenshotFile = remember(mediaScreenPath, selectedFile) {
+                    if (selectedFile == null) return@remember null
+                    val baseName = selectedFile.nameWithoutExtension
+                    val dir = File(mediaScreenPath)
+                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                        .map { File(dir, it) }
+                        .firstOrNull { it.exists() }
+                }
+
+                if (screenshotFile != null) {
+                    val bitmap = remember(screenshotFile) {
+                        try {
+                            BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = "Screenshot",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .padding(vertical = 8.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             }
         }
