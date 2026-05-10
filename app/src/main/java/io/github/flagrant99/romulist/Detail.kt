@@ -31,6 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import android.view.KeyEvent
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import java.io.File
 
 @Composable
@@ -128,6 +133,36 @@ fun Detail(
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
+
+                val screenshotFile = remember(mediaScreenPath, selectedFile) {
+                    if (selectedFile == null) return@remember null
+                    val baseName = selectedFile.nameWithoutExtension
+                    val dir = File(mediaScreenPath)
+                    listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                        .map { File(dir, it) }
+                        .firstOrNull { it.exists() }
+                }
+
+                if (screenshotFile != null) {
+                    val bitmap = remember(screenshotFile) {
+                        try {
+                            BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = "Screenshot",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .padding(vertical = 8.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
             }
 
 
