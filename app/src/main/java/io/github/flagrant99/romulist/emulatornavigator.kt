@@ -17,11 +17,20 @@ object EmulatorNavigator {
         val nameExclusions: List<String> = emptyList()
     )
     
+    data class MediaConfig(
+        val cover: String? = null,
+        val marquee: String? = null,
+        val mixart: String? = null,
+        val screen: String? = null,
+        val video: String? = null
+    )
+    
     data class FolderConfig(
         val name: String, 
         val extensions: List<String>, 
         val mainIntent: IntentConfig?,
-        val altIntents: List<IntentConfig> = emptyList()
+        val altIntents: List<IntentConfig> = emptyList(),
+        val media: MediaConfig? = null
     )
     
     data class IntentConfig(
@@ -49,7 +58,9 @@ object EmulatorNavigator {
             val currentExtras = mutableMapOf<String, String>()
             var inExclusions = false
             var inAltIntents = false
+            var inMedia = false
             val altIntents = mutableListOf<IntentConfig>()
+            var currentMedia: MediaConfig? = null
 
             // Determine the system name from the parent directory (e.g., "nes" from Roms/nes/romulist.xml)
             val systemName = file.parentFile?.name ?: "Unknown"
@@ -107,6 +118,20 @@ object EmulatorNavigator {
                                     currentExtras[extraName] = extraValue
                                 }
                             }
+                            "media" -> inMedia = true
+                            "cover", "marquee", "mixart", "screen", "video" -> {
+                                if (inMedia) {
+                                    val text = parser.nextText()
+                                    currentMedia = when (tagName) {
+                                        "cover" -> (currentMedia ?: MediaConfig()).copy(cover = text)
+                                        "marquee" -> (currentMedia ?: MediaConfig()).copy(marquee = text)
+                                        "mixart" -> (currentMedia ?: MediaConfig()).copy(mixart = text)
+                                        "screen" -> (currentMedia ?: MediaConfig()).copy(screen = text)
+                                        "video" -> (currentMedia ?: MediaConfig()).copy(video = text)
+                                        else -> currentMedia
+                                    }
+                                }
+                            }
                         }
                     }
                     XmlPullParser.END_TAG -> {
@@ -127,9 +152,13 @@ object EmulatorNavigator {
                                 currentIntent = null
                                 currentExtras.clear()
                             }
+                            "media" -> inMedia = false
                             "folder" -> {
                                 if (!inExclusions) {
-                                    systemConfig = currentFolder?.copy(altIntents = altIntents.toList())
+                                    systemConfig = currentFolder?.copy(
+                                        altIntents = altIntents.toList(),
+                                        media = currentMedia
+                                    )
                                     android.util.Log.d("Romulist", "  Finalizing systemConfig for: ${systemConfig?.name}")
                                 }
                             }

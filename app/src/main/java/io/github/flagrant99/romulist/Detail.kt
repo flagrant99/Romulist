@@ -116,6 +116,20 @@ fun Detail(
                 color = Color.Green
             )
 
+            val mediaScreenPath = remember(system.media?.screen, configSource) {
+                val screenRel = system.media?.screen ?: return@remember null
+                val configPath = configSource ?: return@remember null
+                File(File(configPath).parentFile, screenRel).absolutePath
+            }
+
+            if (mediaScreenPath != null) {
+                Text(
+                    text = "Screen: $mediaScreenPath",
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
+                )
+            }
+
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
