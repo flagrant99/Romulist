@@ -20,6 +20,13 @@
 		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		    </intent>
 		 </alt_intents>
+		 <media>
+			<cover>m/cover</cover>
+			<marquee>m/marquee</marquee>
+			<mixart>m/mixart</mixart>
+			<screen>m/screen</screen>
+			<video>m/video</video>
+		 </media>
 	</folder>
 	<exclusions>
 		<folder name="m" />
