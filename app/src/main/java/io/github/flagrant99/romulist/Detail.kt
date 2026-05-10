@@ -130,7 +130,7 @@ fun Detail(
                             .weight(1f)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        MediaSection(system, configSource, selectedFile)
+                        DetailMediaSection(system, configSource, selectedFile)
                     }
                 }
             } else {
@@ -154,7 +154,7 @@ fun Detail(
                         color = Color.Green.copy(alpha = 0.3f)
                     )
 
-                    MediaSection(system, configSource, selectedFile)
+                    DetailMediaSection(system, configSource, selectedFile)
                 }
             }
         }
@@ -284,7 +284,7 @@ private fun InfoSection(
 }
 
 @Composable
-internal fun MediaSection(
+internal fun DetailMediaSection(
     system: EmulatorNavigator.FolderConfig,
     configSource: String?,
     selectedFile: File?
@@ -325,24 +325,24 @@ internal fun MediaSection(
         }
     }
 
-    val mediaScreenPath = remember(system.media?.screen, configSource) {
-        system.media?.screen?.resolvePath(configSource)
+    val mediaBoxartPath = remember(system.media?.cover, configSource) {
+        system.media?.cover?.resolvePath(configSource)
     }
 
-    if (mediaScreenPath != null) {
-        val screenshotFile = remember(mediaScreenPath, selectedFile) {
+    if (mediaBoxartPath != null) {
+        val boxartFile = remember(mediaBoxartPath, selectedFile) {
             if (selectedFile == null) return@remember null
             val baseName = selectedFile.nameWithoutExtension
-            val dir = File(mediaScreenPath)
+            val dir = File(mediaBoxartPath)
             listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
                 .map { File(dir, it) }
                 .firstOrNull { it.exists() }
         }
 
-        if (screenshotFile != null) {
-            val bitmap = remember(screenshotFile) {
+        if (boxartFile != null) {
+            val bitmap = remember(boxartFile) {
                 try {
-                    BitmapFactory.decodeFile(screenshotFile.absolutePath)?.asImageBitmap()
+                    BitmapFactory.decodeFile(boxartFile.absolutePath)?.asImageBitmap()
                 } catch (_: Exception) {
                     null
                 }
@@ -350,7 +350,7 @@ internal fun MediaSection(
             if (bitmap != null) {
                 Image(
                     bitmap = bitmap,
-                    contentDescription = "Screenshot",
+                    contentDescription = "Boxart",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
