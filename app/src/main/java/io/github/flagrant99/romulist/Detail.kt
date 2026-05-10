@@ -284,7 +284,7 @@ private fun InfoSection(
 }
 
 @Composable
-private fun MediaSection(
+internal fun MediaSection(
     system: EmulatorNavigator.FolderConfig,
     configSource: String?,
     selectedFile: File?

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,9 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import android.content.res.Configuration
 import io.github.flagrant99.romulist.ui.theme.Black80
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -177,106 +181,128 @@ fun ListFiles(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Path: ${currentPath.absolutePath}",
-            modifier = Modifier.padding(8.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray
-        )
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-        if (romulistConfig?.systemConfig != null) {
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .fillMaxWidth()
-                    .background(Black80)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "${romulistConfig.systemConfig.name} : ${romulistConfig.systemConfig.mainIntent?.name ?: ""}",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontFamily = FontFamily.Monospace,
-                        shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
-                    ),
-                    color = Color.Green,
-                )
-            }
-        }
+    Row(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = if (isLandscape) Modifier.weight(1f) else Modifier.fillMaxSize()) {
+            Text(
+                text = "Path: ${currentPath.absolutePath}",
+                modifier = Modifier.padding(8.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
 
-        if (isScanning) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color.Green)
+            if (romulistConfig?.systemConfig != null) {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .fillMaxWidth()
+                        .background(Black80)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "${romulistConfig.systemConfig.name} : ${romulistConfig.systemConfig.mainIntent?.name ?: ""}",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontFamily = FontFamily.Monospace,
+                            shadow = Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f)
+                        ),
+                        color = Color.Green,
+                    )
+                }
             }
-        } else if (files.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No files or folders found",
-                    color = Color.DarkGray,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        } else {
-            val showIcons = files.any { it.isDirectory }
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                state = listState
-            ) {
-                itemsIndexed(files) { index, file ->
-                    val isItemSelected = file.absolutePath == selectedFile?.absolutePath
-                    FileRow(
-                        name = file.name,
-                        isDirectory = file.isDirectory,
-                        onBack = onBack,
-                        isSelected = isItemSelected,
-                        showIcon = showIcons,
-                        focusRequester = when {
-                            isItemSelected -> selectedItemFocusRequester
-                            index == 0 -> firstItemFocusRequester
-                            else -> remember { FocusRequester() }
-                        },
-                        onFocus = {
-                            if (!file.isDirectory) {
-                                onFileSelect(file)
+
+            if (isScanning) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.Green)
+                }
+            } else if (files.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No files or folders found",
+                        color = Color.DarkGray,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            } else {
+                val showIcons = files.any { it.isDirectory }
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    state = listState
+                ) {
+                    itemsIndexed(files) { index, file ->
+                        val isItemSelected = file.absolutePath == selectedFile?.absolutePath
+                        FileRow(
+                            name = file.name,
+                            isDirectory = file.isDirectory,
+                            onBack = onBack,
+                            isSelected = isItemSelected,
+                            showIcon = showIcons,
+                            focusRequester = when {
+                                isItemSelected -> selectedItemFocusRequester
+                                index == 0 -> firstItemFocusRequester
+                                else -> remember { FocusRequester() }
+                            },
+                            onFocus = {
+                                if (!file.isDirectory) {
+                                    onFileSelect(file)
+                                }
+                            },
+                            onLongClick = {
+                                if (file.isDirectory) {
+                                    onPathChange(file)
+                                } else {
+                                    onFileSelect(file)
+                                    // Launch game only if a favorite folder is set and file is underneath it
+                                    favoritePath?.let { fav ->
+                                        if (file.absolutePath.startsWith(fav)) {
+                                            EmulatorNavigator.launchGame(
+                                                context = context,
+                                                filePath = file.absolutePath,
+                                                config = romulistConfig,
+                                                preferredIntent = preferredIntent
+                                            )
+                                        }
+                                    }
+                                }
                             }
-                        },
-                        onLongClick = {
+                        ) {
                             if (file.isDirectory) {
                                 onPathChange(file)
                             } else {
                                 onFileSelect(file)
-                                // Launch game only if a favorite folder is set and file is underneath it
-                                favoritePath?.let { fav ->
-                                    if (file.absolutePath.startsWith(fav)) {
-                                        EmulatorNavigator.launchGame(
-                                            context = context,
-                                            filePath = file.absolutePath,
-                                            config = romulistConfig,
-                                            preferredIntent = preferredIntent
-                                        )
-                                    }
-                                }
                             }
-                        }
-                    ) {
-                        if (file.isDirectory) {
-                            onPathChange(file)
-                        } else {
-                            onFileSelect(file)
                         }
                     }
                 }
+            }
+        }
+
+        if (isLandscape && romulistConfig?.systemConfig != null) {
+            VerticalDivider(color = Color.DarkGray, thickness = 1.dp)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(16.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                MediaSection(
+                    system = romulistConfig.systemConfig,
+                    configSource = configResult.second,
+                    selectedFile = selectedFile
+                )
             }
         }
     }
