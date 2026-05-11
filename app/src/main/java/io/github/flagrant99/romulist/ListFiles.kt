@@ -342,7 +342,7 @@ internal fun ListMediaSection(
     LaunchedEffect(selectedFile, videoFile) {
         showVideo = false
         if (selectedFile != null && videoFile != null) {
-            delay(5000)
+            delay(2000)
             showVideo = true
         }
     }
