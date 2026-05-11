@@ -1,0 +1,1 @@
+Example using fixed and relative paths for media folders. In this case internal storage is used for covers. This can make a huge difference for front ends that use media for selection where internal storage speed is much faster than external.
