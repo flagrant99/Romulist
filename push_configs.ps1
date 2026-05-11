@@ -1,6 +1,8 @@
 param (
     [string]$DevicePath = "",
-    [string]$Serial = ""
+    [string]$Serial = "",
+    [ValidateSet("Internal", "External", "Auto")]
+    [string]$Storage = "Auto"
 )
 
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
@@ -41,28 +43,46 @@ if ($Serial -ne "") {
     }
 }
 
-Write-Host "Targeting device: $targetSerial"
+# Get device model name
+$deviceModel = & $adb -s $targetSerial shell getprop ro.product.model
+$deviceModel = $deviceModel.Trim()
 
-# Auto-detect DevicePath if not provided
+Write-Host "Targeting device: $deviceModel ($targetSerial)"
+
+# Auto-detect or use specified Storage
 if ($DevicePath -eq "") {
-    Write-Host "Auto-detecting storage path..."
+    Write-Host "Resolving storage path ($Storage)..."
     $storageItems = & $adb -s $targetSerial shell ls /storage
     # Look for SD Card pattern (e.g., 3636-3939 or AC50-F7EF)
     $sdCard = $storageItems | ForEach-Object { $_.Trim() } | Where-Object { $_ -match "^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$" } | Select-Object -First 1
 
-    if ($sdCard) {
-        $DevicePath = "/storage/$sdCard/ROMs"
-        Write-Host "Detected SD Card: $DevicePath"
-    } else {
+    if ($Storage -eq "External") {
+        if ($sdCard) {
+            $DevicePath = "/storage/$sdCard/ROMs"
+            Write-Host "Using SD Card: $DevicePath"
+        } else {
+            Write-Error "External storage requested but no SD Card was detected in /storage."
+            exit 1
+        }
+    } elseif ($Storage -eq "Internal") {
         $DevicePath = "/storage/emulated/0/ROMs"
-        Write-Host "No SD Card detected, defaulting to internal storage: $DevicePath"
+        Write-Host "Using Internal Storage: $DevicePath"
+    } else {
+        # Auto mode
+        if ($sdCard) {
+            $DevicePath = "/storage/$sdCard/ROMs"
+            Write-Host "Detected SD Card: $DevicePath"
+        } else {
+            $DevicePath = "/storage/emulated/0/ROMs"
+            Write-Host "No SD Card detected, defaulting to internal storage: $DevicePath"
+        }
     }
 } else {
     Write-Host "Using specified DevicePath: $DevicePath"
 }
 
 # Base source directory
-$SourceBase = Join-Path $PSScriptRoot "app/src/main/assets/ROMs"
+$SourceBase = Join-Path $PSScriptRoot "configs/TB-7306F/ROMs"
 
 if (-not (Test-Path $SourceBase)) {
     Write-Error "Source path $SourceBase not found."
