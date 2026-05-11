@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
@@ -52,6 +54,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import android.view.KeyEvent
 import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.unit.dp
 import io.github.flagrant99.romulist.ui.theme.RomulistTheme
 import java.io.File
 
@@ -161,6 +164,7 @@ fun RomulistApp()
                     containerColor = Color.Black,
                     contentColor = Color.Green,
                 ) {
+                    Spacer(Modifier.height(16.dp))
                     AppDestinations.entries.filter { it != AppDestinations.SET_HOME }
                         .forEach { destination ->
                             val isSelected = if (destination == AppDestinations.BACK) false
@@ -185,7 +189,7 @@ fun RomulistApp()
                                     disabledIconColor = Color.Gray,
                                     disabledTextColor = Color.Gray
                                 ),
-                                modifier = if (destination == AppDestinations.HOME) {
+                                modifier = (if (destination == AppDestinations.HOME) {
                                     Modifier.pointerInput(Unit) {
                                         awaitEachGesture {
                                             awaitFirstDown(pass = PointerEventPass.Initial)
@@ -203,7 +207,7 @@ fun RomulistApp()
                                             }
                                         }
                                     }
-                                } else Modifier,
+                                } else Modifier).padding(vertical = 24.dp),
                                 onClick = {
                                     when (destination) {
                                         AppDestinations.BACK -> handleBack()
