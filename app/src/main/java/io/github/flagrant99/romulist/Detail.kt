@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.viewinterop.AndroidView
+import android.view.TextureView
+import android.media.MediaPlayer
+import android.net.Uri
 import java.io.File
 
 @Composable
@@ -328,35 +333,84 @@ internal fun DetailMediaSectionVertical(
         }
     }
 
-    if (boxartBitmap != null || mixartBitmap != null) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                if (boxartBitmap != null) {
-                    Image(
-                        bitmap = boxartBitmap,
-                        contentDescription = "Boxart",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
+    val mediaVideoPath = remember(system.media?.video, configSource) {
+        system.media?.video?.resolvePath(configSource)
+    }
+    val videoFile = remember(mediaVideoPath, selectedFile) {
+        if (selectedFile == null || mediaVideoPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaVideoPath)
+        listOf("$baseName.mp4", "$baseName.MP4")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (videoFile != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(vertical = 8.dp)
+            ) {
+                AndroidView(
+                    factory = { ctx ->
+                        TextureView(ctx).apply {
+                            surfaceTextureListener = object : android.view.TextureView.SurfaceTextureListener {
+                                var mediaPlayer: MediaPlayer? = null
+                                override fun onSurfaceTextureAvailable(st: android.graphics.SurfaceTexture, w: Int, h: Int) {
+                                    mediaPlayer = MediaPlayer().apply {
+                                        setDataSource(ctx, Uri.fromFile(videoFile))
+                                        setSurface(android.view.Surface(st))
+                                        isLooping = true
+                                        setOnPreparedListener { start() }
+                                        prepareAsync()
+                                    }
+                                }
+                                override fun onSurfaceTextureSizeChanged(st: android.graphics.SurfaceTexture, w: Int, h: Int) {}
+                                override fun onSurfaceTextureDestroyed(st: android.graphics.SurfaceTexture): Boolean {
+                                    mediaPlayer?.release()
+                                    return true
+                                }
+                                override fun onSurfaceTextureUpdated(st: android.graphics.SurfaceTexture) {}
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
-            Column(modifier = Modifier.weight(1f)) {
-                if (mixartBitmap != null) {
-                    Image(
-                        bitmap = mixartBitmap,
-                        contentDescription = "Mixart",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp),
-                        contentScale = ContentScale.Fit
-                    )
+        }
+
+        if (boxartBitmap != null || mixartBitmap != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (boxartBitmap != null) {
+                        Image(
+                            bitmap = boxartBitmap,
+                            contentDescription = "Boxart",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    if (mixartBitmap != null) {
+                        Image(
+                            bitmap = mixartBitmap,
+                            contentDescription = "Mixart",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             }
         }
@@ -407,35 +461,37 @@ internal fun DetailMediaSectionLandscape(
         }
     }
 
-    if (boxartBitmap != null || mixartBitmap != null) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                if (boxartBitmap != null) {
-                    Image(
-                        bitmap = boxartBitmap,
-                        contentDescription = "Boxart",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp),
-                        contentScale = ContentScale.Fit
-                    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (boxartBitmap != null || mixartBitmap != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (boxartBitmap != null) {
+                        Image(
+                            bitmap = boxartBitmap,
+                            contentDescription = "Boxart",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                if (mixartBitmap != null) {
-                    Image(
-                        bitmap = mixartBitmap,
-                        contentDescription = "Mixart",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp),
-                        contentScale = ContentScale.Fit
-                    )
+                Column(modifier = Modifier.weight(1f)) {
+                    if (mixartBitmap != null) {
+                        Image(
+                            bitmap = mixartBitmap,
+                            contentDescription = "Mixart",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 }
             }
         }
