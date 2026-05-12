@@ -2,10 +2,14 @@ package io.github.flagrant99.romulist
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +23,8 @@ import java.io.File
 fun SetHomeFolder(
     currentFolder: File?,
     homePath: String?,
+    useNavRail: Boolean,
+    onToggleNavRail: (Boolean) -> Unit,
     onSetHome: (String?) -> Unit
 ) {
     Column(
@@ -28,10 +34,41 @@ fun SetHomeFolder(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Set Home Folder",
+            text = "Settings",
             style = MaterialTheme.typography.headlineSmall,
             color = Color.Green,
             modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Text(
+                text = "Use Side Nav in Landscape",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
+            Spacer(Modifier.weight(1f))
+            Switch(
+                checked = useNavRail,
+                onCheckedChange = onToggleNavRail,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.Green,
+                    checkedTrackColor = Color.DarkGray,
+                    uncheckedThumbColor = Color.Gray,
+                    uncheckedTrackColor = Color.Black
+                )
+            )
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color.DarkGray)
+
+        Text(
+            text = "Set Home Folder",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Green,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         // Display current path

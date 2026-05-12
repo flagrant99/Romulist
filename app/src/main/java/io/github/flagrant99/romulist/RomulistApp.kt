@@ -103,6 +103,10 @@ fun RomulistApp()
 
         var isInitialized by rememberSaveable { mutableStateOf(false) }
 
+        var useNavRail by rememberSaveable {
+            mutableStateOf(settings.useNavRail)
+        }
+
         val listState = rememberLazyListState()
 
         val handleHome = {
@@ -157,9 +161,10 @@ fun RomulistApp()
 
         val configuration = LocalConfiguration.current
         val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val showRail = isLandscape && useNavRail
 
         Row(modifier = Modifier.fillMaxSize()) {
-            if (isLandscape) {
+            if (showRail) {
                 NavigationRail(
                     containerColor = Color.Black,
                     contentColor = Color.Green,
@@ -256,7 +261,7 @@ fun RomulistApp()
                         } else false
                     },
                 bottomBar = {
-                    if (!isLandscape) {
+                    if (!showRail) {
                         NavigationBar {
                             AppDestinations.entries.filter { it != AppDestinations.SET_HOME }
                                 .forEach { destination ->
@@ -373,6 +378,11 @@ fun RomulistApp()
                     AppDestinations.SET_HOME -> SetHomeFolder(
                         currentFolder = selectedFolder,
                         homePath = favoriteFolder,
+                        useNavRail = useNavRail,
+                        onToggleNavRail = { 
+                            useNavRail = it
+                            settings.useNavRail = it
+                        },
                         onSetHome = { path ->
                             favoriteFolder = path
                             settings.favoriteFolder = path

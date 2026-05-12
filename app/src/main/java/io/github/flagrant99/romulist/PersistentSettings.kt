@@ -14,4 +14,10 @@ class PersistentSettings(context: Context) {
         set(value) {
             sharedPrefs.edit().putString("favorite_folder", value).apply()
         }
+
+    var useNavRail: Boolean
+        get() = sharedPrefs.getBoolean("use_nav_rail", true)
+        set(value) {
+            sharedPrefs.edit().putBoolean("use_nav_rail", value).apply()
+        }
 }
