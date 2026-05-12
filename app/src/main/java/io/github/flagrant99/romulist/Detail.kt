@@ -131,7 +131,7 @@ fun Detail(
                             .weight(1f)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        DetailMediaSection(system, configSource, selectedFile)
+                        DetailMediaSectionLandscape(system, configSource, selectedFile)
                     }
                 }
             } else {
@@ -155,7 +155,7 @@ fun Detail(
                         color = Color.Green.copy(alpha = 0.3f)
                     )
 
-                    DetailMediaSection(system, configSource, selectedFile)
+                    DetailMediaSectionVertical(system, configSource, selectedFile)
                 }
             }
         }
@@ -285,7 +285,86 @@ private fun InfoSection(
 }
 
 @Composable
-internal fun DetailMediaSection(
+internal fun DetailMediaSectionVertical(
+    system: EmulatorNavigator.FolderConfig,
+    configSource: String?,
+    selectedFile: File?
+) {
+    val mediaBoxartPath = remember(system.media?.cover, configSource) {
+        system.media?.cover?.resolvePath(configSource)
+    }
+    val boxartFile = remember(mediaBoxartPath, selectedFile) {
+        if (selectedFile == null || mediaBoxartPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaBoxartPath)
+        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+    }
+    val boxartBitmap = remember(boxartFile) {
+        try {
+            boxartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    val mediaMixartPath = remember(system.media?.mixart, configSource) {
+        system.media?.mixart?.resolvePath(configSource)
+    }
+    val mixartFile = remember(mediaMixartPath, selectedFile) {
+        if (selectedFile == null || mediaMixartPath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaMixartPath)
+        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+    }
+    val mixartBitmap = remember(mixartFile) {
+        try {
+            mixartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    if (boxartBitmap != null || mixartBitmap != null) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                if (boxartBitmap != null) {
+                    Image(
+                        bitmap = boxartBitmap,
+                        contentDescription = "Boxart",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                if (mixartBitmap != null) {
+                    Image(
+                        bitmap = mixartBitmap,
+                        contentDescription = "Mixart",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun DetailMediaSectionLandscape(
     system: EmulatorNavigator.FolderConfig,
     configSource: String?,
     selectedFile: File?
