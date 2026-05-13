@@ -398,18 +398,6 @@ internal fun DetailMediaSectionVertical(
             }
         }
 
-        if (marqueeBitmap != null) {
-            Image(
-                bitmap = marqueeBitmap,
-                contentDescription = "Marquee",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(vertical = 8.dp),
-                contentScale = ContentScale.Fit
-            )
-        }
-
         if (videoFile != null) {
             Box(
                 modifier = Modifier
@@ -443,6 +431,18 @@ internal fun DetailMediaSectionVertical(
                     modifier = Modifier.fillMaxSize()
                 )
             }
+        }
+
+        if (marqueeBitmap != null) {
+            Image(
+                bitmap = marqueeBitmap,
+                contentDescription = "Marquee",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Fit
+            )
         }
     }
 }
