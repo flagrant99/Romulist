@@ -333,6 +333,24 @@ internal fun DetailMediaSectionVertical(
         }
     }
 
+    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
+        system.media?.marquee?.resolvePath(configSource)
+    }
+    val marqueeBitmap = remember(mediaMarqueePath, selectedFile) {
+        if (selectedFile == null || mediaMarqueePath == null) return@remember null
+        val baseName = selectedFile.nameWithoutExtension
+        val dir = File(mediaMarqueePath)
+        val file = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+            .map { File(dir, it) }
+            .firstOrNull { it.exists() }
+
+        try {
+            file?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     val mediaVideoPath = remember(system.media?.video, configSource) {
         system.media?.video?.resolvePath(configSource)
     }
@@ -346,6 +364,52 @@ internal fun DetailMediaSectionVertical(
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
+        if (boxartBitmap != null || mixartBitmap != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (boxartBitmap != null) {
+                        Image(
+                            bitmap = boxartBitmap,
+                            contentDescription = "Boxart",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    if (mixartBitmap != null) {
+                        Image(
+                            bitmap = mixartBitmap,
+                            contentDescription = "Mixart",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+            }
+        }
+
+        if (marqueeBitmap != null) {
+            Image(
+                bitmap = marqueeBitmap,
+                contentDescription = "Marquee",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
+
         if (videoFile != null) {
             Box(
                 modifier = Modifier
@@ -378,40 +442,6 @@ internal fun DetailMediaSectionVertical(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
-            }
-        }
-
-        if (boxartBitmap != null || mixartBitmap != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    if (boxartBitmap != null) {
-                        Image(
-                            bitmap = boxartBitmap,
-                            contentDescription = "Boxart",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    if (mixartBitmap != null) {
-                        Image(
-                            bitmap = mixartBitmap,
-                            contentDescription = "Mixart",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
             }
         }
     }
