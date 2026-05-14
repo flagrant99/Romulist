@@ -159,6 +159,19 @@ fun RomulistApp()
 
         var isHomeLongPressActive by remember { mutableStateOf(false) }
 
+        val onNavClick: (AppDestinations) -> Unit = { destination ->
+            when (destination) {
+                AppDestinations.BACK -> handleBack()
+                AppDestinations.HOME -> {
+                    if (!isHomeLongPressActive) {
+                        handleHome()
+                    }
+                    isHomeLongPressActive = false
+                }
+                else -> currentScreen = destination
+            }
+        }
+
         val configuration = LocalConfiguration.current
         val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val showRail = isLandscape && useNavRail
@@ -212,20 +225,22 @@ fun RomulistApp()
                                             }
                                         }
                                     }
-                                } else Modifier).padding(vertical = 24.dp),
-                                onClick = {
-                                    when (destination) {
-                                        AppDestinations.BACK -> handleBack()
-                                        AppDestinations.HOME -> {
-                                            if (!isHomeLongPressActive) {
-                                                handleHome()
+                                } else Modifier)
+                                    .padding(vertical = 24.dp)
+                                    .onKeyEvent { keyEvent ->
+                                        if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+                                            val isEnabled = when (destination) {
+                                                AppDestinations.BACK -> canGoBack
+                                                AppDestinations.DETAIL -> selectedFile != null
+                                                else -> true
                                             }
-                                            isHomeLongPressActive = false
-                                        }
-
-                                        else -> currentScreen = destination
-                                    }
-                                },
+                                            if (isEnabled) {
+                                                onNavClick(destination)
+                                            }
+                                            true
+                                        } else false
+                                    },
+                                onClick = { onNavClick(destination) },
                                 label = { Text(destination.label) },
                                 icon = {
                                     Icon(
@@ -296,7 +311,7 @@ fun RomulistApp()
                                             disabledIconColor = Color.Gray,
                                             disabledTextColor = Color.Gray
                                         ),
-                                        modifier = if (destination == AppDestinations.HOME) {
+                                        modifier = (if (destination == AppDestinations.HOME) {
                                             Modifier.pointerInput(Unit) {
                                                 awaitEachGesture {
                                                     // Use Initial pass to see the event before NavigationBarItem consumes it
@@ -318,20 +333,20 @@ fun RomulistApp()
                                                     }
                                                 }
                                             }
-                                        } else Modifier,
-                                        onClick = {
-                                            when (destination) {
-                                                AppDestinations.BACK -> handleBack()
-                                                AppDestinations.HOME -> {
-                                                    if (!isHomeLongPressActive) {
-                                                        handleHome()
-                                                    }
-                                                    isHomeLongPressActive = false
+                                        } else Modifier).onKeyEvent { keyEvent ->
+                                            if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+                                                val isEnabled = when (destination) {
+                                                    AppDestinations.BACK -> canGoBack
+                                                    AppDestinations.DETAIL -> selectedFile != null
+                                                    else -> true
                                                 }
-
-                                                else -> currentScreen = destination
-                                            }
+                                                if (isEnabled) {
+                                                    onNavClick(destination)
+                                                }
+                                                true
+                                            } else false
                                         },
+                                        onClick = { onNavClick(destination) },
                                         label = { Text(destination.label) },
                                         icon = {
                                             Icon(
