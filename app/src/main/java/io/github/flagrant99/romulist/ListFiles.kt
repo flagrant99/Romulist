@@ -51,6 +51,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
 fun ListFiles(
@@ -408,14 +411,30 @@ internal fun ListMediaSection(
         ) {
             if (showVideo && videoFile != null) {
                 key(videoFile.absolutePath) {
+                    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+                    val lifecycleOwner = LocalLifecycleOwner.current
+
+                    DisposableEffect(lifecycleOwner) {
+                        val observer = LifecycleEventObserver { _, event ->
+                            if (event == Lifecycle.Event.ON_PAUSE) {
+                                mediaPlayer?.pause()
+                            } else if (event == Lifecycle.Event.ON_RESUME) {
+                                if (showVideo) mediaPlayer?.start()
+                            }
+                        }
+                        lifecycleOwner.lifecycle.addObserver(observer)
+                        onDispose {
+                            lifecycleOwner.lifecycle.removeObserver(observer)
+                        }
+                    }
+
                     AndroidView(
                         factory = { ctx ->
                             TextureView(ctx).apply {
                                 val textureView = this
                                 surfaceTextureListener = object : android.view.TextureView.SurfaceTextureListener {
-                                    var mediaPlayer: MediaPlayer? = null
                                     override fun onSurfaceTextureAvailable(st: android.graphics.SurfaceTexture, w: Int, h: Int) {
-                                        mediaPlayer = MediaPlayer().apply {
+                                        val mp = MediaPlayer().apply {
                                             try {
                                                 setDataSource(ctx, Uri.fromFile(videoFile))
                                                 setSurface(android.view.Surface(st))
@@ -441,6 +460,7 @@ internal fun ListMediaSection(
                                                 android.util.Log.e("Romulist", "MediaPlayer error: ${e.message}")
                                             }
                                         }
+                                        mediaPlayer = mp
                                     }
                                     override fun onSurfaceTextureSizeChanged(st: android.graphics.SurfaceTexture, w: Int, h: Int) {}
                                     override fun onSurfaceTextureDestroyed(st: android.graphics.SurfaceTexture): Boolean {
