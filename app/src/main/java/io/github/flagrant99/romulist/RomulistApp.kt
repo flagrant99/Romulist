@@ -251,8 +251,15 @@ fun RomulistApp()
                                     true
                                 }
 
-                                KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y -> {
+                                KeyEvent.KEYCODE_BUTTON_X -> {
                                     handleHome()
+                                    true
+                                }
+
+                                KeyEvent.KEYCODE_BUTTON_Y -> {
+                                    if (selectedFile != null) {
+                                        currentScreen = AppDestinations.DETAIL
+                                    }
                                     true
                                 }
 
