@@ -40,8 +40,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.VideoView
+import android.view.TextureView
+import android.media.MediaPlayer
 import android.net.Uri
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
 import java.io.File
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
@@ -325,7 +328,8 @@ internal fun ListMediaSection(
     configSource: String?,
     selectedFile: File?
 ) {
-    var showVideo by remember(selectedFile) { mutableStateOf(false) }
+    var showVideo by remember { mutableStateOf(false) }
+    var lastFileId by remember { mutableStateOf<String?>(null) }
 
     val mediaVideoPath = remember(system.media?.video, configSource) {
         system.media?.video?.resolvePath(configSource)
@@ -340,14 +344,19 @@ internal fun ListMediaSection(
     }
 
     LaunchedEffect(selectedFile, videoFile) {
+        val currentId = selectedFile?.absolutePath
+        if (currentId == lastFileId && showVideo) return@LaunchedEffect
+
         showVideo = false
+        lastFileId = currentId
+
         if (selectedFile != null && videoFile != null) {
             delay(2000)
             showVideo = true
         }
     }
 
-    // 1. Resolve Marquee
+    // Resolve Marquee and Screenshot (Existing logic)
     val mediaMarqueePath = remember(system.media?.marquee, configSource) {
         system.media?.marquee?.resolvePath(configSource)
     }
@@ -366,7 +375,6 @@ internal fun ListMediaSection(
         }
     }
 
-    // 2. Resolve Screenshot
     val mediaScreenPath = remember(system.media?.screen, configSource) {
         system.media?.screen?.resolvePath(configSource)
     }
@@ -385,7 +393,6 @@ internal fun ListMediaSection(
         }
     }
 
-    // Final Fix: Use a Box to overlay Marquee on top of the media area
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -393,30 +400,63 @@ internal fun ListMediaSection(
             .padding(vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Layer 0: Video or Screenshot (Aligned to BOTTOM)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 24.dp), // Push down to avoid marquee overlap
+                .padding(top = 24.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
             if (showVideo && videoFile != null) {
-                AndroidView(
-                    factory = { ctx ->
-                        VideoView(ctx).apply {
-                            setVideoURI(Uri.fromFile(videoFile))
-                            setOnPreparedListener { mp ->
-                                mp.isLooping = true
+                key(videoFile.absolutePath) {
+                    AndroidView(
+                        factory = { ctx ->
+                            TextureView(ctx).apply {
+                                val textureView = this
+                                surfaceTextureListener = object : android.view.TextureView.SurfaceTextureListener {
+                                    var mediaPlayer: MediaPlayer? = null
+                                    override fun onSurfaceTextureAvailable(st: android.graphics.SurfaceTexture, w: Int, h: Int) {
+                                        mediaPlayer = MediaPlayer().apply {
+                                            try {
+                                                setDataSource(ctx, Uri.fromFile(videoFile))
+                                                setSurface(android.view.Surface(st))
+                                                isLooping = true
+                                                setOnVideoSizeChangedListener { _, width, height ->
+                                                    if (width > 0 && height > 0) {
+                                                        val matrix = android.graphics.Matrix()
+                                                        val vw = textureView.width.toFloat()
+                                                        val vh = textureView.height.toFloat()
+                                                        val videoRatio = width.toFloat() / height
+                                                        val viewRatio = vw / vh
+                                                        if (videoRatio > viewRatio) {
+                                                            matrix.setScale(1f, viewRatio / videoRatio, vw / 2, vh / 2)
+                                                        } else {
+                                                            matrix.setScale(videoRatio / viewRatio, 1f, vw / 2, vh / 2)
+                                                        }
+                                                        textureView.setTransform(matrix)
+                                                    }
+                                                }
+                                                setOnPreparedListener { start() }
+                                                prepareAsync()
+                                            } catch (e: Exception) {
+                                                android.util.Log.e("Romulist", "MediaPlayer error: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                    override fun onSurfaceTextureSizeChanged(st: android.graphics.SurfaceTexture, w: Int, h: Int) {}
+                                    override fun onSurfaceTextureDestroyed(st: android.graphics.SurfaceTexture): Boolean {
+                                        mediaPlayer?.release()
+                                        mediaPlayer = null
+                                        return true
+                                    }
+                                    override fun onSurfaceTextureUpdated(st: android.graphics.SurfaceTexture) {}
+                                }
                             }
-                            // Ensure VideoView doesn't cover overlaying Compose views
-                            setZOrderMediaOverlay(true) 
-                            start()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                    )
+                }
             } else if (screenshotBitmap != null) {
                 Image(
                     bitmap = screenshotBitmap,
@@ -429,7 +469,6 @@ internal fun ListMediaSection(
             }
         }
 
-        // Layer 1: Marquee (Foreground / Overlay - Aligned to TOP)
         if (marqueeBitmap != null) {
             Image(
                 bitmap = marqueeBitmap,
