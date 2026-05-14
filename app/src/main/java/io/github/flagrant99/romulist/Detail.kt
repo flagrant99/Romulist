@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -37,6 +38,9 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import android.view.KeyEvent
@@ -295,6 +299,23 @@ internal fun DetailMediaSectionVertical(
     configSource: String?,
     selectedFile: File?
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val mediaPlayerRef = remember { mutableStateOf<MediaPlayer?>(null) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                mediaPlayerRef.value?.pause()
+            } else if (event == Lifecycle.Event.ON_RESUME) {
+                mediaPlayerRef.value?.start()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val mediaBoxartPath = remember(system.media?.cover, configSource) {
         system.media?.cover?.resolvePath(configSource)
     }
@@ -314,8 +335,8 @@ internal fun DetailMediaSectionVertical(
         }
     }
 
-    val mediaMixartPath = remember(system.media?.mixart, configSource) {
-        system.media?.mixart?.resolvePath(configSource)
+    val mediaMixartPath = remember(system.media?.mixart, system.media?.screen, configSource) {
+        system.media?.mixart?.resolvePath(configSource) ?: system.media?.screen?.resolvePath(configSource)
     }
     val mixartFile = remember(mediaMixartPath, selectedFile) {
         if (selectedFile == null || mediaMixartPath == null) return@remember null
@@ -325,12 +346,31 @@ internal fun DetailMediaSectionVertical(
             .map { File(dir, it) }
             .firstOrNull { it.exists() }
     }
-    val mixartBitmap = remember(mixartFile) {
-        try {
+    val mixartBitmap = remember(mixartFile, system.media?.screen, configSource, selectedFile) {
+        var bitmap = try {
             mixartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
         } catch (_: Exception) {
             null
         }
+
+        // Fallback to screen if mixart file wasn't found or couldn't be decoded
+        if (bitmap == null && selectedFile != null) {
+            val screenPath = system.media?.screen?.resolvePath(configSource)
+            if (screenPath != null) {
+                val baseName = selectedFile.nameWithoutExtension
+                val dir = File(screenPath)
+                val screenFile = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                    .map { File(dir, it) }
+                    .firstOrNull { it.exists() }
+                
+                bitmap = try {
+                    screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+        }
+        bitmap
     }
 
     val mediaMarqueePath = remember(system.media?.marquee, configSource) {
@@ -404,10 +444,12 @@ internal fun DetailMediaSectionVertical(
                     .fillMaxWidth()
                     .height(300.dp)
                     .padding(vertical = 8.dp)
+                    .background(Color.Black)
             ) {
                 AndroidView(
                     factory = { ctx ->
                         TextureView(ctx).apply {
+                            val textureView = this
                             surfaceTextureListener = object : android.view.TextureView.SurfaceTextureListener {
                                 var mediaPlayer: MediaPlayer? = null
                                 override fun onSurfaceTextureAvailable(st: android.graphics.SurfaceTexture, w: Int, h: Int) {
@@ -415,13 +457,31 @@ internal fun DetailMediaSectionVertical(
                                         setDataSource(ctx, Uri.fromFile(videoFile))
                                         setSurface(android.view.Surface(st))
                                         isLooping = true
+                                        setOnVideoSizeChangedListener { _, width, height ->
+                                            if (width > 0 && height > 0) {
+                                                val matrix = android.graphics.Matrix()
+                                                val vw = textureView.width.toFloat()
+                                                val vh = textureView.height.toFloat()
+                                                val videoRatio = width.toFloat() / height
+                                                val viewRatio = vw / vh
+                                                if (videoRatio > viewRatio) {
+                                                    matrix.setScale(1f, viewRatio / videoRatio, vw / 2, vh / 2)
+                                                } else {
+                                                    matrix.setScale(videoRatio / viewRatio, 1f, vw / 2, vh / 2)
+                                                }
+                                                textureView.setTransform(matrix)
+                                            }
+                                        }
                                         setOnPreparedListener { start() }
                                         prepareAsync()
                                     }
+                                    mediaPlayerRef.value = mediaPlayer
                                 }
                                 override fun onSurfaceTextureSizeChanged(st: android.graphics.SurfaceTexture, w: Int, h: Int) {}
                                 override fun onSurfaceTextureDestroyed(st: android.graphics.SurfaceTexture): Boolean {
                                     mediaPlayer?.release()
+                                    mediaPlayer = null
+                                    mediaPlayerRef.value = null
                                     return true
                                 }
                                 override fun onSurfaceTextureUpdated(st: android.graphics.SurfaceTexture) {}
@@ -472,8 +532,8 @@ internal fun DetailMediaSectionLandscape(
         }
     }
 
-    val mediaMixartPath = remember(system.media?.mixart, configSource) {
-        system.media?.mixart?.resolvePath(configSource)
+    val mediaMixartPath = remember(system.media?.mixart, system.media?.screen, configSource) {
+        system.media?.mixart?.resolvePath(configSource) ?: system.media?.screen?.resolvePath(configSource)
     }
     val mixartFile = remember(mediaMixartPath, selectedFile) {
         if (selectedFile == null || mediaMixartPath == null) return@remember null
@@ -483,12 +543,31 @@ internal fun DetailMediaSectionLandscape(
             .map { File(dir, it) }
             .firstOrNull { it.exists() }
     }
-    val mixartBitmap = remember(mixartFile) {
-        try {
+    val mixartBitmap = remember(mixartFile, system.media?.screen, configSource, selectedFile) {
+        var bitmap = try {
             mixartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
         } catch (_: Exception) {
             null
         }
+
+        // Fallback to screen if mixart file wasn't found or couldn't be decoded
+        if (bitmap == null && selectedFile != null) {
+            val screenPath = system.media?.screen?.resolvePath(configSource)
+            if (screenPath != null) {
+                val baseName = selectedFile.nameWithoutExtension
+                val dir = File(screenPath)
+                val screenFile = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
+                    .map { File(dir, it) }
+                    .firstOrNull { it.exists() }
+                
+                bitmap = try {
+                    screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+        }
+        bitmap
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
