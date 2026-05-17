@@ -94,12 +94,28 @@ fun RootScreen(
                 val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                 val memoryInfo = ActivityManager.MemoryInfo()
                 activityManager.getMemoryInfo(memoryInfo)
-                val totalRam = memoryInfo.totalMem
-                val ramStr = if (totalRam >= 1024L * 1024 * 1024) {
-                    "${(totalRam + 512L * 1024 * 1024) / (1024 * 1024 * 1024)} GB"
-                } else {
-                    "${totalRam / (1024 * 1024)} MB"
+
+                fun formatRam(bytes: Long): String {
+                    return if (bytes >= 1024L * 1024 * 1024) {
+                        "${(bytes + 512L * 1024 * 1024) / (1024 * 1024 * 1024)} GB"
+                    } else {
+                        "${bytes / (1024 * 1024)} MB"
+                    }
                 }
+
+                val usableRamBytes = memoryInfo.totalMem
+                val usableRamStr = formatRam(usableRamBytes)
+
+                val totalRamBytes = if (android.os.Build.VERSION.SDK_INT >= 34) {
+                    memoryInfo.advertisedMem
+                } else {
+                    // Heuristic: Round up to the nearest common RAM tier (1, 2, 3, 4, 6, 8, 12, 16, 24, 32 GB)
+                    val gb = usableRamBytes.toDouble() / (1024.0 * 1024.0 * 1024.0)
+                    val tiers = listOf(1, 2, 3, 4, 6, 8, 12, 16, 24, 32)
+                    val matchedTier = tiers.firstOrNull { it >= gb } ?: gb.toInt()
+                    matchedTier.toLong() * 1024 * 1024 * 1024
+                }
+                val totalRamStr = formatRam(totalRamBytes)
 
                 Text(
                     text = "SYSTEM INFO",
@@ -125,7 +141,12 @@ fun RootScreen(
                     color = Color.Green
                 )
                 Text(
-                    text = "RAM: $ramStr",
+                    text = "Usable RAM: $usableRamStr",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Total RAM: $totalRamStr",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
