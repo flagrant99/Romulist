@@ -68,6 +68,31 @@ fun ListFiles(
     val context = LocalContext.current
     var refreshToggle by remember { mutableStateOf(false) }
 
+    var isLaunchingGame by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var isResumed by remember {
+        mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> isResumed = false
+                Lifecycle.Event.ON_RESUME -> {
+                    isResumed = true
+                    isLaunchingGame = false
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val isMediaActive = isResumed && !isLaunchingGame
+
     var lastPath by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(currentPath) {
         if (lastPath != currentPath.absolutePath) {
@@ -283,6 +308,7 @@ fun ListFiles(
                                     // Launch game only if a favorite folder is set and file is underneath it
                                     favoritePath?.let { fav ->
                                         if (file.absolutePath.startsWith(fav)) {
+                                            isLaunchingGame = true
                                             EmulatorNavigator.launchGame(
                                                 context = context,
                                                 filePath = file.absolutePath,
@@ -318,7 +344,8 @@ fun ListFiles(
                 ListMediaSection(
                     system = romulistConfig.systemConfig,
                     configSource = configResult.second,
-                    selectedFile = selectedFile
+                    selectedFile = selectedFile,
+                    isActive = isMediaActive
                 )
             }
         }
@@ -329,7 +356,8 @@ fun ListFiles(
 internal fun ListMediaSection(
     system: EmulatorNavigator.FolderConfig,
     configSource: String?,
-    selectedFile: File?
+    selectedFile: File?,
+    isActive: Boolean
 ) {
     var showVideo by remember { mutableStateOf(false) }
     var lastFileId by remember { mutableStateOf<String?>(null) }
@@ -346,7 +374,11 @@ internal fun ListMediaSection(
             .firstOrNull { it.exists() }
     }
 
-    LaunchedEffect(selectedFile, videoFile) {
+    LaunchedEffect(selectedFile, videoFile, isActive) {
+        if (!isActive) {
+            showVideo = false
+            return@LaunchedEffect
+        }
         val currentId = selectedFile?.absolutePath
         if (currentId == lastFileId && showVideo) return@LaunchedEffect
 
