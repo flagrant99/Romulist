@@ -93,6 +93,10 @@ fun ListFiles(
 
     val isMediaActive = isResumed && !isLaunchingGame
 
+    val isAtHome = remember(currentPath, favoritePath) {
+        favoritePath != null && currentPath.absolutePath == File(favoritePath).absolutePath
+    }
+
     var lastPath by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(currentPath) {
         if (lastPath != currentPath.absolutePath) {
@@ -290,6 +294,7 @@ fun ListFiles(
                             onBack = onBack,
                             isSelected = isItemSelected,
                             showIcon = showIcons,
+                            isAtHome = isAtHome,
                             focusRequester = when {
                                 isItemSelected -> selectedItemFocusRequester
                                 index == 0 -> firstItemFocusRequester

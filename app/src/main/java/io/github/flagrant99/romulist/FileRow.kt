@@ -31,7 +31,9 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import android.view.KeyEvent
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import io.github.flagrant99.romulist.ui.theme.Pink40
 import io.github.flagrant99.romulist.ui.theme.Purple80
 
 @Composable
@@ -41,6 +43,7 @@ fun FileRow(
     onBack: () -> Unit,
     isSelected: Boolean = false,
     showIcon: Boolean = true,
+    isAtHome: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     onFocus: () -> Unit = {},
     onLongClick: () -> Unit = {},
@@ -101,15 +104,53 @@ fun FileRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (showIcon) {
-            Icon(
-                imageVector = if (isDirectory) Icons.Default.Folder else Icons.Default.Description,
-                contentDescription = null,
-                tint = when {
-                    isDirectory -> Color.Yellow
-                    isSelected -> Color.Cyan
-                    else -> Color.White
+            val iconTint = when {
+                isDirectory -> Color.Yellow
+                isSelected -> Color.Cyan
+                else -> Color.White
+            }
+
+            if (isAtHome && isDirectory) {
+                when (name)
+                {
+                    "atari2600", "atari5200", "atari7800", "c64", "vectrex", "fbneo", "mame", "colecovision" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_joystick_24),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
+                    "gb", "gba", "gbc", "gamegear" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_gamepad_24),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
+                    "snes" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_gamepad_circle_right_24),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
+                    "nes" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_gamepad_right_24),
+                    contentDescription = null,
+                    tint = iconTint
+                        )
+
+                    else ->
+                    {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_videogame_asset_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                    }
+
                 }
-            )
+            } else {
+                Icon(
+                    imageVector = if (isDirectory) Icons.Default.Folder else Icons.Default.Description,
+                    contentDescription = null,
+                    tint = iconTint
+                )
+            }
             Spacer(Modifier.width(12.dp))
         }
         Text(
