@@ -1,27 +1,27 @@
 <romulist>
-	<folder name="Game Gear" extensions="zip">
-		  <intent name="genesis_plus_gx" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+	<folder name="Playstation" extensions="PBP, cue">
+		  <intent name="pcsx_rearmed" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$FILE_PATH" />
-		    <extra name="LIBRETRO" value="$DATA_DIR/cores/genesis_plus_gx_libretro_android.so" />
+		    <extra name="LIBRETRO" value="$DATA_DIR/cores/pcsx_rearmed_libretro_android.so" />
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
 		  <alt_intents>
-		    <intent name="picodrive" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		    <intent name="swanstation" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		      <action name="android.intent.action.MAIN" />
 		      <extra name="ROM" value="$FILE_PATH" />
-		      <extra name="LIBRETRO" value="$DATA_DIR/cores/picodrive_libretro_android.so" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/swanstation_libretro_android.so" />
 		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		    </intent>
-		    <intent name="genesis_plus_gx_wide" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		    <intent name="mednafen" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		      <action name="android.intent.action.MAIN" />
 		      <extra name="ROM" value="$FILE_PATH" />
-		      <extra name="LIBRETRO" value="$DATA_DIR/cores/genesis_plus_gx_wide_libretro_android.so" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/mednafen_psx_hw_libretro_android.so" />
 		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		    </intent>
 		 </alt_intents>
 		 <media>
-			<cover type="fixed">/storage/emulated/0/ROMs/gamegear/m/cover</cover>
+			<cover type="fixed">/storage/emulated/0/ROMs/segacd/m/cover</cover>
 			<marquee type="relative">m/marquee</marquee>
 			<mixart type="relative">m/mixart</mixart>
 			<screen type="relative">m/screen</screen>

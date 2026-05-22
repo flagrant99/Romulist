@@ -113,7 +113,7 @@ fun FileRow(
             if (isAtHome && isDirectory) {
                 when (name)
                 {
-                    "atari2600", "atari5200", "atari7800", "c64", "vectrex", "fbneo", "mame", "colecovision" -> Icon(
+                    "atari2600", "atari5200", "atari7800", "c64", "vectrex", "fbneo", "mame", "colecovision", "neogeo" -> Icon(
                         painter = painterResource(id = R.drawable.outline_joystick_24),
                         contentDescription = null,
                         tint = iconTint
@@ -133,6 +133,11 @@ fun FileRow(
                     contentDescription = null,
                     tint = iconTint
                         )
+                    "psx" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_stadia_controller_24),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
 
                     else ->
                     {
