@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="Android Applications" extensions="xml">
+	<folder name="Android Applications" extensions="rax">
 		 <media>
 			<cover type="relative">m/cover</cover>
 			<marquee type="relative">m/marquee</marquee>
