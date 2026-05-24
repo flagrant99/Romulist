@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="Android Applications" extensions="rax">
+	<folder name="Android Applications" extensions="rax" use_gamelistxml_names="N">
 		 <media>
 			<marquee type="relative">m/marquee</marquee>
 			<screen type="relative">m/screen</screen>

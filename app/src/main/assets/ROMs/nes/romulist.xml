@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="Nintendo Entertainment System" extensions="zip">
+	<folder name="Nintendo Entertainment System" extensions="zip" use_gamelistxml_names="Y">
 		  <intent name="fceumm" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$FILE_PATH" />
