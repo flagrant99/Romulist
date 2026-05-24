@@ -1,0 +1,8 @@
+<romulist>
+    <app name="Cocoon FE">
+        <intent name="Cocoon FE" packageName="com.inssekt.cocoon" className="com.inssekt.cocoon.MainActivity">
+            <action name="android.intent.action.MAIN" />
+            <category name="android.intent.category.LAUNCHER" />
+        </intent>
+    </app>
+</romulist>

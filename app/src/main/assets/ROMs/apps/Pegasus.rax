@@ -1,0 +1,8 @@
+<romulist>
+	<app name="Pegasus">
+		  <intent name="Pegasus" packageName="org.pegasus_frontend.android" className="org.pegasus_frontend.android.MainActivity">
+		    <action name="android.intent.action.MAIN" />
+		    <category name="android.intent.category.LAUNCHER" />
+		  </intent>
+	</app>
+</romulist>

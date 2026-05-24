@@ -1,0 +1,11 @@
+<romulist>
+	<folder name="Android Applications" extensions="xml">
+		 <media>
+			<cover type="relative">m/cover</cover>
+			<marquee type="relative">m/marquee</marquee>
+			<mixart type="relative">m/mixart</mixart>
+			<screen type="relative">m/screen</screen>
+			<video type="relative">m/video</video>
+		 </media>
+	</folder>
+</romulist>
