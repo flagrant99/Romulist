@@ -42,7 +42,8 @@ object EmulatorNavigator {
         val extensions: List<String>, 
         val mainIntent: IntentConfig?,
         val altIntents: List<IntentConfig> = emptyList(),
-        val media: MediaConfig? = null
+        val media: MediaConfig? = null,
+        val useGamelistXmlNames: Boolean = false
     )
     
     data class IntentConfig(
@@ -95,7 +96,9 @@ object EmulatorNavigator {
                                 } else {
                                     val extensionsAttr = parser.getAttributeValue(null, "extensions")
                                     val extensions = extensionsAttr?.split(",")?.map { it.trim() } ?: emptyList()
-                                    currentFolder = FolderConfig(nameAttr ?: systemName, extensions, null)
+                                    val useGamelistNamesAttr = parser.getAttributeValue(null, "use_gamelistxml_names")
+                                    val useGamelistNames = useGamelistNamesAttr?.equals("Y", ignoreCase = true) ?: false
+                                    currentFolder = FolderConfig(nameAttr ?: systemName, extensions, null, useGamelistXmlNames = useGamelistNames)
                                 }
                             }
                             "intent" -> {
@@ -276,5 +279,49 @@ object EmulatorNavigator {
         } catch (e: PackageManager.NameNotFoundException) {
             false
         }
+    }
+
+    fun parseGamelist(file: File): Map<String, String> {
+        android.util.Log.d("Romulist", "--- Starting parse of gamelist: ${file.absolutePath} ---")
+        val fileNamesMap = mutableMapOf<String, String>()
+        try {
+            val parser = Xml.newPullParser()
+            val inputStream = FileInputStream(file)
+            parser.setInput(inputStream, "UTF-8")
+
+            var eventType = parser.eventType
+            var currentPath: String? = null
+            var currentName: String? = null
+
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                val tagName = parser.name
+                when (eventType) {
+                    XmlPullParser.START_TAG -> {
+                        when (tagName) {
+                            "game" -> {
+                                currentPath = null
+                                currentName = null
+                            }
+                            "path" -> currentPath = parser.nextText()
+                            "name" -> currentName = parser.nextText()
+                        }
+                    }
+                    XmlPullParser.END_TAG -> {
+                        if (tagName == "game") {
+                            if (currentPath != null && currentName != null) {
+                                val fileName = File(currentPath).name
+                                fileNamesMap[fileName] = currentName
+                            }
+                        }
+                    }
+                }
+                eventType = try { parser.next() } catch (e: Exception) { XmlPullParser.END_DOCUMENT }
+            }
+            inputStream.close()
+        } catch (e: Exception) {
+            android.util.Log.e("Romulist", "Failed to parse gamelist.xml: ${e.message}")
+        }
+        android.util.Log.d("Romulist", "--- Finished parse of gamelist. Found ${fileNamesMap.size} entries ---")
+        return fileNamesMap
     }
 }

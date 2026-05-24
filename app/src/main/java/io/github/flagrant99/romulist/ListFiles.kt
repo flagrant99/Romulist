@@ -170,6 +170,25 @@ fun ListFiles(
     }
 
     val romulistConfig = configResult.first
+    val configSource = configResult.second
+
+    var fileNamesMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    LaunchedEffect(configSource, romulistConfig) {
+        if (romulistConfig?.systemConfig?.useGamelistXmlNames == true && configSource != null) {
+            withContext(Dispatchers.IO) {
+                val configFile = File(configSource)
+                val gamelistFile = File(configFile.parentFile, "gamelist.xml")
+                if (gamelistFile.exists()) {
+                    fileNamesMap = EmulatorNavigator.parseGamelist(gamelistFile)
+                } else {
+                    fileNamesMap = emptyMap()
+                }
+            }
+        } else {
+            fileNamesMap = emptyMap()
+        }
+    }
 
     val system = romulistConfig?.systemConfig
     val preferredIntent = system?.mainIntent
@@ -288,8 +307,9 @@ fun ListFiles(
                 ) {
                     itemsIndexed(files) { index, file ->
                         val isItemSelected = file.absolutePath == selectedFile?.absolutePath
+                        val displayName = if (file.isDirectory) file.name else fileNamesMap[file.name] ?: file.name
                         FileRow(
-                            name = file.name,
+                            name = displayName,
                             isDirectory = file.isDirectory,
                             onBack = onBack,
                             isSelected = isItemSelected,
