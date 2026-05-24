@@ -51,6 +51,7 @@ object EmulatorNavigator {
         val packageName32: String?,
         val className: String?,
         val action: String,
+        val categories: List<String> = emptyList(),
         val data: String?,
         val extras: Map<String, String>
     )
@@ -68,6 +69,7 @@ object EmulatorNavigator {
             var currentFolder: FolderConfig? = null
             var currentIntent: IntentConfig? = null
             val currentExtras = mutableMapOf<String, String>()
+            val currentCategories = mutableListOf<String>()
             var inExclusions = false
             var inAltIntents = false
             var inMedia = false
@@ -85,9 +87,9 @@ object EmulatorNavigator {
                         when (tagName) {
                             "exclusions" -> inExclusions = true
                             "alt_intents" -> inAltIntents = true
-                            "folder" -> {
+                            "folder", "app" -> {
                                 val nameAttr = parser.getAttributeValue(null, "name")
-                                android.util.Log.d("Romulist", "  folder nameAttr: $nameAttr, inExclusions: $inExclusions")
+                                android.util.Log.d("Romulist", "  $tagName nameAttr: $nameAttr, inExclusions: $inExclusions")
                                 if (inExclusions) {
                                     nameAttr?.let { exclusions.add(it) }
                                 } else {
@@ -114,13 +116,21 @@ object EmulatorNavigator {
 
                                 android.util.Log.d("Romulist", "Found intent start: nameAttr='$nameAttr', effective='$effectiveName', pkg='$pkg'")
                                 
-                                currentIntent = IntentConfig(effectiveName, pkg, pkg32, cls, "", dataAttr, emptyMap())
+                                currentIntent = IntentConfig(effectiveName, pkg, pkg32, cls, "", emptyList(), dataAttr, emptyMap())
                                 currentExtras.clear()
+                                currentCategories.clear()
                             }
                             "action" -> {
                                 val actionName = parser.getAttributeValue(null, "name") ?: ""
                                 android.util.Log.d("Romulist", "  action: $actionName")
                                 currentIntent = currentIntent?.copy(action = actionName)
+                            }
+                            "category" -> {
+                                val categoryName = parser.getAttributeValue(null, "name")
+                                android.util.Log.d("Romulist", "  category: $categoryName")
+                                if (categoryName != null) {
+                                    currentCategories.add(categoryName)
+                                }
                             }
                             "extra" -> {
                                 val extraName = parser.getAttributeValue(null, "name")
@@ -154,7 +164,10 @@ object EmulatorNavigator {
                             "exclusions" -> inExclusions = false
                             "alt_intents" -> inAltIntents = false
                             "intent" -> {
-                                val finalizedIntent = currentIntent?.copy(extras = currentExtras.toMap())
+                                val finalizedIntent = currentIntent?.copy(
+                                    extras = currentExtras.toMap(),
+                                    categories = currentCategories.toList()
+                                )
                                 android.util.Log.d("Romulist", "  Finalizing intent: ${finalizedIntent?.name}")
                                 if (finalizedIntent != null) {
                                     if (inAltIntents) {
@@ -165,9 +178,10 @@ object EmulatorNavigator {
                                 }
                                 currentIntent = null
                                 currentExtras.clear()
+                                currentCategories.clear()
                             }
                             "media" -> inMedia = false
-                            "folder" -> {
+                            "folder", "app" -> {
                                 if (!inExclusions) {
                                     systemConfig = currentFolder?.copy(
                                         altIntents = altIntents.toList(),
@@ -194,15 +208,25 @@ object EmulatorNavigator {
     }
 
     fun launchGame(context: Context, filePath: String, config: RomulistConfig? = null, preferredIntent: IntentConfig? = null) {
-        val systemCfg = config?.systemConfig
-        val intentCfg = preferredIntent ?: systemCfg?.mainIntent
+        var intentCfg = preferredIntent ?: config?.systemConfig?.mainIntent
+
+        if (filePath.lowercase().endsWith(".rax")) {
+            val raxFile = File(filePath)
+            if (raxFile.exists()) {
+                val raxConfig = parseConfig(raxFile)
+                raxConfig?.systemConfig?.mainIntent?.let {
+                    intentCfg = it
+                }
+            }
+        }
         
-        if (intentCfg == null) {
+        val currentIntentCfg = intentCfg
+        if (currentIntentCfg == null) {
             Toast.makeText(context, "No emulator configuration found", Toast.LENGTH_SHORT).show()
             return
         }
         val is64Bit = android.os.Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
-        val packageName = if (is64Bit) intentCfg.packageName else (intentCfg.packageName32 ?: intentCfg.packageName)
+        val packageName = if (is64Bit) currentIntentCfg.packageName else (currentIntentCfg.packageName32 ?: currentIntentCfg.packageName)
 
         if (!isAppInstalled(context, packageName)) {
             Toast.makeText(context, "Emulator not installed: $packageName", Toast.LENGTH_SHORT).show()
@@ -212,23 +236,25 @@ object EmulatorNavigator {
         val intent = Intent().apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             
-            if (!intentCfg.className.isNullOrBlank()) {
-                setClassName(packageName, intentCfg.className)
+            if (!currentIntentCfg.className.isNullOrBlank()) {
+                setClassName(packageName, currentIntentCfg.className)
             } else {
                 setPackage(packageName)
             }
             
-            action = if (intentCfg.action.isNotEmpty()) intentCfg.action else Intent.ACTION_VIEW
+            action = if (currentIntentCfg.action.isNotEmpty()) currentIntentCfg.action else Intent.ACTION_VIEW
+
+            currentIntentCfg.categories.forEach { addCategory(it) }
 
             val appInfo = context.packageManager.getApplicationInfo(packageName, 0)
             val dataDir = appInfo.dataDir
             val externalFilesDir = "/storage/emulated/0/Android/data/$packageName/files"
 
-            intentCfg.data?.let {
+            currentIntentCfg.data?.let {
                 data = Uri.parse(it)
             }
 
-            intentCfg.extras.forEach { (k, v) ->
+            currentIntentCfg.extras.forEach { (k, v) ->
                 val resolvedValue = v.replace("\$DATA_DIR", dataDir)
                     .replace("\$FILE_PATH", filePath)
                     .replace("\$EXTERNAL_FILES_DIR", externalFilesDir)
