@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="Game Boy" extensions="7z">
+	<folder name="Game Boy" extensions="7z" use_gamelistxml_names="Y">
 		  <intent name="gambatte" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$FILE_PATH" />

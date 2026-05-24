@@ -6,6 +6,20 @@
 		    <extra name="LIBRETRO" value="$DATA_DIR/cores/genesis_plus_gx_libretro_android.so" />
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
+		  <alt_intents>
+		    <intent name="picodrive" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/picodrive_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		    <intent name="genesis_plus_gx_wide" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/genesis_plus_gx_wide_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		 </alt_intents>
 		 <media>
 			<cover type="relative">m/cover</cover>
 			<marquee type="relative">m/marquee</marquee>
