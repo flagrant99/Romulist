@@ -19,7 +19,7 @@ function Get-Devices {
     return $deviceList.ForEach({ $_.Split("`t")[0] })
 }
 
-$connectedDevices = Get-Devices
+$connectedDevices = @(Get-Devices)
 
 if ($connectedDevices.Count -eq 0) {
     Write-Error "No devices connected. Please connect your device and enable USB debugging."
@@ -45,7 +45,11 @@ if ($Serial -ne "") {
 
 # Get device model name
 $deviceModel = & $adb -s $targetSerial shell getprop ro.product.model
-$deviceModel = $deviceModel.Trim()
+if ($null -ne $deviceModel) {
+    $deviceModel = $deviceModel.Trim()
+} else {
+    $deviceModel = "Unknown"
+}
 
 Write-Host "Targeting device: $deviceModel ($targetSerial)"
 
