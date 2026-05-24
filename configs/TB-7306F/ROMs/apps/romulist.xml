@@ -1,0 +1,11 @@
+<romulist>
+	<folder name="Android Applications" extensions="rax" use_gamelistxml_names="N">
+		 <media>
+			<marquee type="relative">m/marquee</marquee>
+			<screen type="relative">m/screen</screen>
+		 </media>
+	<exclusions>
+		<folder name="m" />
+	</exclusions>
+	</folder>
+</romulist>
