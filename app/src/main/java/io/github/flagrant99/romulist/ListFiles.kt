@@ -211,7 +211,7 @@ fun ListFiles(
         // No-op here, handled by lastPath check above
     }
 
-    LaunchedEffect(currentPath, allowedExtensions, nameExclusions) {
+    LaunchedEffect(currentPath, allowedExtensions, nameExclusions, fileNamesMap) {
         isScanning = true
         withContext(Dispatchers.IO) {
             val result = currentPath.listFiles()
@@ -224,7 +224,10 @@ fun ListFiles(
                     file.isDirectory || allowedExtensions.isEmpty() || file.extension.lowercase() in allowedExtensions
                 }
                 ?.sortedWith(
-                    compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() }
+                    compareBy<File> { !it.isDirectory }.thenBy { 
+                        val displayName = if (it.isDirectory) it.name else fileNamesMap[it.name] ?: it.name
+                        displayName.lowercase()
+                    }
                 ) ?: emptyList()
             files = result
             isScanning = false
