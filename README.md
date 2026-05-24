@@ -1,3 +1,6 @@
+![Logo](https://github.com/flagrant99/Romulist/raw/master/.github/wiki-images/Logo.png)
+
+
 1. Romulist is an Android File/Folder Browser.
 2. Set a favorite Home Folder for quick access to a root favorite folder location.
 3. romulist.xml files in subfolders determine multiple android activities on specified file types.
