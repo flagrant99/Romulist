@@ -7,5 +7,8 @@
 			<screen type="relative">m/screen</screen>
 			<video type="relative">m/video</video>
 		 </media>
+	<exclusions>
+		<folder name="m" />
+	</exclusions>
 	</folder>
 </romulist>
