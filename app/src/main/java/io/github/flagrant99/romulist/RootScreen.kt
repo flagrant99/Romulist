@@ -3,9 +3,9 @@ package io.github.flagrant99.romulist
 import android.app.ActivityManager
 import android.app.usage.StorageStatsManager
 import android.content.Context
+import android.os.Build
 import android.os.StatFs
 import android.os.storage.StorageManager
-import android.os.storage.StorageVolume
 import android.text.format.Formatter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,7 +41,7 @@ import java.io.File
 
 @Composable
 fun RootScreen(
-    volumes: List<StorageVolume>,
+    volumes: List<VolumeInfo>,
     storageStatsManager: StorageStatsManager?,
     context: Context,
     onVolumeClick: (File) -> Unit,
@@ -173,7 +173,7 @@ fun RootScreen(
                     totalStr = Formatter.formatFileSize(context, totalBytes)
                     freeStr = Formatter.formatFileSize(context, freeBytes)
                 }
-                else if (volume.isPrimary)
+                else if (volume.isPrimary && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 {
                     storageStatsManager?.let { manager ->
                         val totalBytes = manager.getTotalBytes(StorageManager.UUID_DEFAULT)
@@ -223,7 +223,7 @@ fun RootScreen(
             )
             {
                 Text(
-                    text = volume.getDescription(context),
+                    text = volume.description,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(

@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
+import android.os.Environment
 import android.os.storage.StorageManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -72,10 +74,42 @@ fun RomulistApp()
             if (isPreview) null else context.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
         }
         val storageStatsManager = remember {
-            if (isPreview) null else context.getSystemService(Context.STORAGE_STATS_SERVICE) as? StorageStatsManager
+            if (isPreview || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) null else context.getSystemService(Context.STORAGE_STATS_SERVICE) as? StorageStatsManager
         }
         val volumes = remember(storageManager) {
-            storageManager?.storageVolumes ?: emptyList()
+            if (isPreview || storageManager == null) {
+                emptyList<VolumeInfo>()
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                storageManager.storageVolumes.map { sv ->
+                    val dir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        sv.directory
+                    } else {
+                        try {
+                            val getPath = sv.javaClass.getMethod("getPath")
+                            File(getPath.invoke(sv) as String)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    VolumeInfo(
+                        directory = dir,
+                        description = sv.getDescription(context),
+                        isPrimary = sv.isPrimary,
+                        isRemovable = sv.isRemovable
+                    )
+                }
+            } else {
+                // Fallback for API 23
+                val externalDir = Environment.getExternalStorageDirectory()
+                listOf(
+                    VolumeInfo(
+                        directory = externalDir,
+                        description = "Internal Storage",
+                        isPrimary = true,
+                        isRemovable = false
+                    )
+                )
+            }
         }
 
         // Persistence Setup
