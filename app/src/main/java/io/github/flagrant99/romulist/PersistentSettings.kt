@@ -20,4 +20,10 @@ class PersistentSettings(context: Context) {
         set(value) {
             sharedPrefs.edit().putBoolean("use_nav_rail", value).apply()
         }
+
+    var swapAB: Boolean
+        get() = sharedPrefs.getBoolean("swap_ab", false)
+        set(value) {
+            sharedPrefs.edit().putBoolean("swap_ab", value).apply()
+        }
 }

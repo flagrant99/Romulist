@@ -107,6 +107,10 @@ fun RomulistApp()
             mutableStateOf(settings.useNavRail)
         }
 
+        var swapAB by rememberSaveable {
+            mutableStateOf(settings.swapAB)
+        }
+
         val listState = rememberLazyListState()
 
         val handleHome = {
@@ -118,6 +122,11 @@ fun RomulistApp()
                 currentScreen = AppDestinations.HOME
             }
         }
+
+        val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+        val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+        val homeKey = KeyEvent.KEYCODE_BUTTON_X
+        val detailKey = KeyEvent.KEYCODE_BUTTON_Y
 
         LaunchedEffect(Unit) {
             if (!isInitialized && favoriteFolder != null) {
@@ -228,7 +237,7 @@ fun RomulistApp()
                                 } else Modifier)
                                     .padding(vertical = 24.dp)
                                     .onKeyEvent { keyEvent ->
-                                        if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+                                        if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                             val isEnabled = when (destination) {
                                                 AppDestinations.BACK -> canGoBack
                                                 AppDestinations.DETAIL -> selectedFile != null
@@ -259,19 +268,19 @@ fun RomulistApp()
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
-                                KeyEvent.KEYCODE_BUTTON_A -> {
+                                backKey -> {
                                     if (canGoBack) {
                                         handleBack()
                                     }
                                     true
                                 }
 
-                                KeyEvent.KEYCODE_BUTTON_X -> {
+                                homeKey -> {
                                     handleHome()
                                     true
                                 }
 
-                                KeyEvent.KEYCODE_BUTTON_Y -> {
+                                detailKey -> {
                                     if (selectedFile != null) {
                                         currentScreen = AppDestinations.DETAIL
                                     }
@@ -334,7 +343,7 @@ fun RomulistApp()
                                                 }
                                             }
                                         } else Modifier).onKeyEvent { keyEvent ->
-                                            if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+                                            if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                                 val isEnabled = when (destination) {
                                                     AppDestinations.BACK -> canGoBack
                                                     AppDestinations.DETAIL -> selectedFile != null
@@ -371,6 +380,7 @@ fun RomulistApp()
                                 favoritePath = favoriteFolder,
                                 selectedFile = selectedFile,
                                 listState = listState,
+                                swapAB = swapAB,
                                 onPathChange = { 
                                     selectedFolder = it 
                                     selectedFile = null
@@ -401,9 +411,14 @@ fun RomulistApp()
                         currentFolder = selectedFolder,
                         homePath = favoriteFolder,
                         useNavRail = useNavRail,
+                        swapAB = swapAB,
                         onToggleNavRail = { 
                             useNavRail = it
                             settings.useNavRail = it
+                        },
+                        onToggleSwapAB = {
+                            swapAB = it
+                            settings.swapAB = it
                         },
                         onSetHome = { path ->
                             favoriteFolder = path

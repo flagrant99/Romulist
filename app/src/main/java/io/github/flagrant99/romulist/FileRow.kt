@@ -44,12 +44,16 @@ fun FileRow(
     isSelected: Boolean = false,
     showIcon: Boolean = true,
     isAtHome: Boolean = false,
+    swapAB: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     onFocus: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
+
+    val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+    val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
     Row(
         modifier = Modifier
@@ -63,19 +67,15 @@ fun FileRow(
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyUp) {
                     when (keyEvent.nativeKeyEvent.keyCode) {
-                        KeyEvent.KEYCODE_BUTTON_B -> {
+                        launchKey -> {
                             onLongClick()
                             true
                         }
-                        KeyEvent.KEYCODE_DPAD_CENTER -> {
-                            onLongClick()
+                        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                            onClick()
                             true
                         }
-                        KeyEvent.KEYCODE_ENTER -> {
-                            onLongClick()
-                            true
-                        }
-                        KeyEvent.KEYCODE_BUTTON_A -> {
+                        backKey -> {
                             onBack()
                             true
                         }

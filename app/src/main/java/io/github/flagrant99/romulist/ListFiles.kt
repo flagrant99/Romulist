@@ -61,6 +61,7 @@ fun ListFiles(
     favoritePath: String?,
     selectedFile: File?,
     listState: LazyListState = rememberLazyListState(),
+    swapAB: Boolean = false,
     onPathChange: (File) -> Unit,
     onFileSelect: (File) -> Unit,
     onBack: () -> Unit
@@ -318,6 +319,7 @@ fun ListFiles(
                             isSelected = isItemSelected,
                             showIcon = showIcons,
                             isAtHome = isAtHome,
+                            swapAB = swapAB,
                             focusRequester = when {
                                 isItemSelected -> selectedItemFocusRequester
                                 index == 0 -> firstItemFocusRequester

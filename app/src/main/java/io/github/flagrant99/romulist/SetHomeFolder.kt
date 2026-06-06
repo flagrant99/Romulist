@@ -26,7 +26,9 @@ fun SetHomeFolder(
     currentFolder: File?,
     homePath: String?,
     useNavRail: Boolean,
+    swapAB: Boolean,
     onToggleNavRail: (Boolean) -> Unit,
+    onToggleSwapAB: (Boolean) -> Unit,
     onSetHome: (String?) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -57,6 +59,28 @@ fun SetHomeFolder(
             Switch(
                 checked = useNavRail,
                 onCheckedChange = onToggleNavRail,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.Green,
+                    checkedTrackColor = Color.DarkGray,
+                    uncheckedThumbColor = Color.Gray,
+                    uncheckedTrackColor = Color.Black
+                )
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Text(
+                text = "Swap South/East Buttons",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
+            Spacer(Modifier.weight(1f))
+            Switch(
+                checked = swapAB,
+                onCheckedChange = onToggleSwapAB,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.Green,
                     checkedTrackColor = Color.DarkGray,
