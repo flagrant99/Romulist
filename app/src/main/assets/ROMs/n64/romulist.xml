@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="Nintendo 64" extensions="zip" use_gamelistxml_names="Y">
+	<folder name="Nintendo 64" extensions="n64" use_gamelistxml_names="Y">
 		  <intent name="mupen" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
 		    <action name="android.intent.action.MAIN" />
 		    <extra name="ROM" value="$FILE_PATH" />
