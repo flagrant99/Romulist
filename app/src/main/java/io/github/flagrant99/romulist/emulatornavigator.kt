@@ -34,10 +34,29 @@ object EmulatorNavigator {
             if (selectedFile == null) return null
             val baseName = selectedFile.nameWithoutExtension
             val baseDir = File(basePath)
-            val dir = if (useSubfolder) File(baseDir, baseName) else baseDir
-            return extensions
+
+            val configParent = configSource?.let { File(it).parentFile }
+            val relativeDir = if (configParent != null && selectedFile.absolutePath.startsWith(configParent.absolutePath)) {
+                val rel = selectedFile.parentFile.absolutePath.substring(configParent.absolutePath.length)
+                    .trim(File.separatorChar)
+                if (rel.isEmpty()) "" else rel
+            } else {
+                ""
+            }
+
+            val dir = if (useSubfolder) {
+                File(File(baseDir, relativeDir), baseName)
+            } else {
+                baseDir
+            }
+
+            val found = extensions
                 .map { File(dir, "$baseName$it") }
                 .firstOrNull { it.exists() }
+
+            android.util.Log.d("Romulist", "Resolving media: base=$basePath, useSubfolder=$useSubfolder, game=$baseName, relDir=$relativeDir, searched_dir=${dir.absolutePath}, found=${found != null}")
+
+            return found
         }
     }
 
@@ -162,6 +181,7 @@ object EmulatorNavigator {
                                     val useSubfolderAttr = parser.getAttributeValue(null, "useSubfolder")
                                     val useSubfolder = useSubfolderAttr?.toBoolean() ?: false
                                     val text = parser.nextText()
+                                    android.util.Log.d("Romulist", "  media item: $tagName, type=$typeAttr, subfolder=$useSubfolder, path=$text")
                                     val mediaItem = MediaItem(text, typeAttr, useSubfolder)
                                     currentMedia = when (tagName) {
                                         "cover" -> (currentMedia ?: MediaConfig()).copy(cover = mediaItem)
