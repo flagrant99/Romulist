@@ -316,16 +316,8 @@ internal fun DetailMediaSectionVertical(
         }
     }
 
-    val mediaBoxartPath = remember(system.media?.cover, configSource) {
-        system.media?.cover?.resolvePath(configSource)
-    }
-    val boxartFile = remember(mediaBoxartPath, selectedFile) {
-        if (selectedFile == null || mediaBoxartPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaBoxartPath)
-        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
+    val boxartFile = remember(system.media?.cover, configSource, selectedFile) {
+        system.media?.cover?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
     }
     val boxartBitmap = remember(boxartFile) {
         try {
@@ -335,16 +327,8 @@ internal fun DetailMediaSectionVertical(
         }
     }
 
-    val mediaMixartPath = remember(system.media?.mixart, system.media?.screen, configSource) {
-        system.media?.mixart?.resolvePath(configSource) ?: system.media?.screen?.resolvePath(configSource)
-    }
-    val mixartFile = remember(mediaMixartPath, selectedFile) {
-        if (selectedFile == null || mediaMixartPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaMixartPath)
-        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
+    val mixartFile = remember(system.media?.mixart, configSource, selectedFile) {
+        system.media?.mixart?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
     }
     val mixartBitmap = remember(mixartFile, system.media?.screen, configSource, selectedFile) {
         var bitmap = try {
@@ -355,35 +339,18 @@ internal fun DetailMediaSectionVertical(
 
         // Fallback to screen if mixart file wasn't found or couldn't be decoded
         if (bitmap == null && selectedFile != null) {
-            val screenPath = system.media?.screen?.resolvePath(configSource)
-            if (screenPath != null) {
-                val baseName = selectedFile.nameWithoutExtension
-                val dir = File(screenPath)
-                val screenFile = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                    .map { File(dir, it) }
-                    .firstOrNull { it.exists() }
-                
-                bitmap = try {
-                    screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-                } catch (_: Exception) {
-                    null
-                }
+            val screenFile = system.media?.screen?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
+            bitmap = try {
+                screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+            } catch (_: Exception) {
+                null
             }
         }
         bitmap
     }
 
-    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-        system.media?.marquee?.resolvePath(configSource)
-    }
-    val marqueeBitmap = remember(mediaMarqueePath, selectedFile) {
-        if (selectedFile == null || mediaMarqueePath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaMarqueePath)
-        val file = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
-
+    val marqueeBitmap = remember(system.media?.marquee, configSource, selectedFile) {
+        val file = system.media?.marquee?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
         try {
             file?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
         } catch (_: Exception) {
@@ -391,16 +358,8 @@ internal fun DetailMediaSectionVertical(
         }
     }
 
-    val mediaVideoPath = remember(system.media?.video, configSource) {
-        system.media?.video?.resolvePath(configSource)
-    }
-    val videoFile = remember(mediaVideoPath, selectedFile) {
-        if (selectedFile == null || mediaVideoPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaVideoPath)
-        listOf("$baseName.mp4", "$baseName.MP4")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
+    val videoFile = remember(system.media?.video, configSource, selectedFile) {
+        system.media?.video?.resolveMediaFile(configSource, selectedFile, listOf(".mp4", ".MP4"))
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -513,16 +472,8 @@ internal fun DetailMediaSectionLandscape(
     configSource: String?,
     selectedFile: File?
 ) {
-    val mediaBoxartPath = remember(system.media?.cover, configSource) {
-        system.media?.cover?.resolvePath(configSource)
-    }
-    val boxartFile = remember(mediaBoxartPath, selectedFile) {
-        if (selectedFile == null || mediaBoxartPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaBoxartPath)
-        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
+    val boxartFile = remember(system.media?.cover, configSource, selectedFile) {
+        system.media?.cover?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
     }
     val boxartBitmap = remember(boxartFile) {
         try {
@@ -532,16 +483,8 @@ internal fun DetailMediaSectionLandscape(
         }
     }
 
-    val mediaMixartPath = remember(system.media?.mixart, system.media?.screen, configSource) {
-        system.media?.mixart?.resolvePath(configSource) ?: system.media?.screen?.resolvePath(configSource)
-    }
-    val mixartFile = remember(mediaMixartPath, selectedFile) {
-        if (selectedFile == null || mediaMixartPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaMixartPath)
-        listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
+    val mixartFile = remember(system.media?.mixart, configSource, selectedFile) {
+        system.media?.mixart?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
     }
     val mixartBitmap = remember(mixartFile, system.media?.screen, configSource, selectedFile) {
         var bitmap = try {
@@ -552,19 +495,11 @@ internal fun DetailMediaSectionLandscape(
 
         // Fallback to screen if mixart file wasn't found or couldn't be decoded
         if (bitmap == null && selectedFile != null) {
-            val screenPath = system.media?.screen?.resolvePath(configSource)
-            if (screenPath != null) {
-                val baseName = selectedFile.nameWithoutExtension
-                val dir = File(screenPath)
-                val screenFile = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-                    .map { File(dir, it) }
-                    .firstOrNull { it.exists() }
-                
-                bitmap = try {
-                    screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-                } catch (_: Exception) {
-                    null
-                }
+            val screenFile = system.media?.screen?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
+            bitmap = try {
+                screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+            } catch (_: Exception) {
+                null
             }
         }
         bitmap

@@ -19,13 +19,25 @@ object EmulatorNavigator {
     
     data class MediaItem(
         val path: String?,
-        val type: String = "relative"
+        val type: String = "relative",
+        val useSubfolder: Boolean = false
     ) {
         fun resolvePath(configSource: String?): String? {
             val p = path ?: return null
             if (type == "fixed") return p
             val configPath = configSource ?: return null
             return File(File(configPath).parentFile, p).absolutePath
+        }
+
+        fun resolveMediaFile(configSource: String?, selectedFile: File?, extensions: List<String>): File? {
+            val basePath = resolvePath(configSource) ?: return null
+            if (selectedFile == null) return null
+            val baseName = selectedFile.nameWithoutExtension
+            val baseDir = File(basePath)
+            val dir = if (useSubfolder) File(baseDir, baseName) else baseDir
+            return extensions
+                .map { File(dir, "$baseName$it") }
+                .firstOrNull { it.exists() }
         }
     }
 
@@ -147,8 +159,10 @@ object EmulatorNavigator {
                             "cover", "marquee", "mixart", "screen", "video" -> {
                                 if (inMedia) {
                                     val typeAttr = parser.getAttributeValue(null, "type") ?: "relative"
+                                    val useSubfolderAttr = parser.getAttributeValue(null, "useSubfolder")
+                                    val useSubfolder = useSubfolderAttr?.toBoolean() ?: false
                                     val text = parser.nextText()
-                                    val mediaItem = MediaItem(text, typeAttr)
+                                    val mediaItem = MediaItem(text, typeAttr, useSubfolder)
                                     currentMedia = when (tagName) {
                                         "cover" -> (currentMedia ?: MediaConfig()).copy(cover = mediaItem)
                                         "marquee" -> (currentMedia ?: MediaConfig()).copy(marquee = mediaItem)

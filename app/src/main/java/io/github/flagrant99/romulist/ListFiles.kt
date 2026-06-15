@@ -392,16 +392,8 @@ internal fun ListMediaSection(
     var showVideo by remember { mutableStateOf(false) }
     var lastFileId by remember { mutableStateOf<String?>(null) }
 
-    val mediaVideoPath = remember(system.media?.video, configSource) {
-        system.media?.video?.resolvePath(configSource)
-    }
-    val videoFile = remember(mediaVideoPath, selectedFile) {
-        if (selectedFile == null || mediaVideoPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaVideoPath)
-        listOf("$baseName.mp4", "$baseName.MP4")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
+    val videoFile = remember(system.media?.video, configSource, selectedFile) {
+        system.media?.video?.resolveMediaFile(configSource, selectedFile, listOf(".mp4", ".MP4"))
     }
 
     LaunchedEffect(selectedFile, videoFile, isActive) {
@@ -422,17 +414,8 @@ internal fun ListMediaSection(
     }
 
     // Resolve Marquee and Screenshot (Existing logic)
-    val mediaMarqueePath = remember(system.media?.marquee, configSource) {
-        system.media?.marquee?.resolvePath(configSource)
-    }
-    val marqueeBitmap = remember(mediaMarqueePath, selectedFile) {
-        if (selectedFile == null || mediaMarqueePath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaMarqueePath)
-        val file = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
-        
+    val marqueeBitmap = remember(system.media?.marquee, configSource, selectedFile) {
+        val file = system.media?.marquee?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
         try {
             file?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
         } catch (_: Exception) {
@@ -440,17 +423,8 @@ internal fun ListMediaSection(
         }
     }
 
-    val mediaScreenPath = remember(system.media?.screen, configSource) {
-        system.media?.screen?.resolvePath(configSource)
-    }
-    val screenshotBitmap = remember(mediaScreenPath, selectedFile) {
-        if (selectedFile == null || mediaScreenPath == null) return@remember null
-        val baseName = selectedFile.nameWithoutExtension
-        val dir = File(mediaScreenPath)
-        val file = listOf("$baseName.png", "$baseName.jpg", "$baseName.PNG", "$baseName.JPG")
-            .map { File(dir, it) }
-            .firstOrNull { it.exists() }
-        
+    val screenshotBitmap = remember(system.media?.screen, configSource, selectedFile) {
+        val file = system.media?.screen?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
         try {
             file?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
         } catch (_: Exception) {
