@@ -100,12 +100,16 @@ foreach ($file in $files) {
     $DestPath = "$DevicePath/$RelativePath".Replace('\', '/')
     $DestDir = ($DestPath.Substring(0, $DestPath.LastIndexOf('/')))
 
-    Write-Host "Pushing: $RelativePath"
-    Write-Host "Target:  $DestPath"
+    # Check if target directory exists on device
+    $dirExists = & $adb -s $targetSerial shell "if [ -d '$DestDir' ]; then echo 'YES'; fi"
 
-    # Create directory and push file
-    & $adb -s $targetSerial shell mkdir -p "'$DestDir'"
-    & $adb -s $targetSerial push "$($file.FullName)" "$DestPath"
+    if ($dirExists -match "YES") {
+        Write-Host "Pushing: $RelativePath"
+        Write-Host "Target:  $DestPath"
+        & $adb -s $targetSerial push "$($file.FullName)" "$DestPath"
+    } else {
+        Write-Host "Skipping: $RelativePath (Target directory '$DestDir' not found)"
+    }
 }
 
 Write-Host "Triggering Media Scan to update MTP/Windows Explorer..."
