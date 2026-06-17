@@ -45,7 +45,7 @@ object EmulatorNavigator {
             }
 
             val dir = if (useSubfolder) {
-                File(File(baseDir, relativeDir), baseName)
+                File(baseDir, relativeDir)
             } else {
                 baseDir
             }

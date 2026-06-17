@@ -86,7 +86,7 @@ if ($DevicePath -eq "") {
 }
 
 # Base source directory
-$SourceBase = Join-Path $PSScriptRoot "configs/TB-7306F/ROMs"
+$SourceBase = Join-Path $PSScriptRoot "configs/SM-A536V/ROMs"
 
 if (-not (Test-Path $SourceBase)) {
     Write-Error "Source path $SourceBase not found."
