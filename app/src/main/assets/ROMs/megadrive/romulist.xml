@@ -21,11 +21,11 @@
 		    </intent>
 		 </alt_intents>
 		 <media>
-			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/covers</cover>
-			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/marquees</marquee>
-			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/miximages</mixart>
-			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/screenshots</screen>
-			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/videos</video>
+			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/megadrive/covers</cover>
+			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/megadrive/marquees</marquee>
+			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/megadrive/miximages</mixart>
+			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/megadrive/screenshots</screen>
+			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/megadrive/videos</video>
 		 </media>
 	</folder>
 	<exclusions>
