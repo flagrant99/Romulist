@@ -7,11 +7,11 @@
 		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
 		  </intent>
 		 <media>
-			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/covers</cover>
-			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/marquees</marquee>
-			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/miximages</mixart>
-			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/screenshots</screen>
-			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/nes/videos</video>
+			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/atari2600/covers</cover>
+			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/atari2600/marquees</marquee>
+			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/atari2600/miximages</mixart>
+			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/atari2600/screenshots</screen>
+			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/atari2600/videos</video>
 		 </media>
 	</folder>
 	<exclusions>
