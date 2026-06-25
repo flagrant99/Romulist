@@ -1,0 +1,36 @@
+<romulist>
+	<folder name="Playstation" extensions="PBP, cue" use_gamelistxml_names="Y">
+		  <intent name="pcsx_rearmed" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		    <action name="android.intent.action.MAIN" />
+		    <extra name="ROM" value="$FILE_PATH" />
+		    <extra name="LIBRETRO" value="$DATA_DIR/cores/pcsx_rearmed_libretro_android.so" />
+		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		  </intent>
+		  <alt_intents>
+		    <intent name="swanstation" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/swanstation_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		    <intent name="mednafen" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		      <action name="android.intent.action.MAIN" />
+		      <extra name="ROM" value="$FILE_PATH" />
+		      <extra name="LIBRETRO" value="$DATA_DIR/cores/mednafen_psx_hw_libretro_android.so" />
+		      <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		    </intent>
+		 </alt_intents>
+		 <media>
+			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/psx/covers</cover>
+			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/psx/marquees</marquee>
+			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/psx/miximages</mixart>
+			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/psx/screenshots</screen>
+			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/psx/videos</video>
+		 </media>
+	</folder>
+	<exclusions>
+		<folder name="m" />
+		<folder name="r" />
+		<folder name="u" />
+	</exclusions>
+</romulist>
