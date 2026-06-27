@@ -101,7 +101,9 @@ fun ListFiles(
     var lastPath by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(currentPath) {
         if (lastPath != currentPath.absolutePath) {
-            listState.scrollToItem(0)
+            if (selectedFile == null) {
+                listState.scrollToItem(0)
+            }
             lastPath = currentPath.absolutePath
         }
     }
@@ -235,7 +237,7 @@ fun ListFiles(
         }
     }
 
-    LaunchedEffect(files, isScanning, selectedFile) {
+    LaunchedEffect(files, isScanning) {
         if (!isScanning && files.isNotEmpty()) {
             val index = files.indexOfFirst { it.absolutePath == selectedFile?.absolutePath }
             if (index != -1) {
@@ -326,9 +328,7 @@ fun ListFiles(
                                 else -> remember { FocusRequester() }
                             },
                             onFocus = {
-                                if (!file.isDirectory) {
-                                    onFileSelect(file)
-                                }
+                                onFileSelect(file)
                             },
                             onLongClick = {
                                 if (file.isDirectory) {

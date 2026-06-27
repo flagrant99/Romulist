@@ -136,6 +136,7 @@ fun RomulistApp()
         }
 
         val handleBack = {
+            val oldFolder = selectedFolder
             val parent = selectedFolder?.parentFile
 
             when {
@@ -146,7 +147,7 @@ fun RomulistApp()
                 // 2. If we are in a subfolder on Home, go to parent
                 parent != null && selectedFolder?.absolutePath != volumes.find { it.directory?.absolutePath == selectedFolder?.absolutePath }?.directory?.absolutePath -> {
                     selectedFolder = parent
-                    selectedFile = null
+                    selectedFile = oldFolder
                 }
                 // 3. If we are at the root of a drive on Home, go back to Drive List
                 selectedFolder != null -> {
@@ -204,7 +205,7 @@ fun RomulistApp()
                                 interactionSource = interactionSource,
                                 enabled = when (destination) {
                                     AppDestinations.BACK -> canGoBack
-                                    AppDestinations.DETAIL -> selectedFile != null
+                                    AppDestinations.DETAIL -> selectedFile?.isFile == true
                                     else -> true
                                 },
                                 colors = NavigationRailItemDefaults.colors(
@@ -240,7 +241,7 @@ fun RomulistApp()
                                         if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                             val isEnabled = when (destination) {
                                                 AppDestinations.BACK -> canGoBack
-                                                AppDestinations.DETAIL -> selectedFile != null
+                                                AppDestinations.DETAIL -> selectedFile?.isFile == true
                                                 else -> true
                                             }
                                             if (isEnabled) {
@@ -281,7 +282,7 @@ fun RomulistApp()
                                 }
 
                                 detailKey -> {
-                                    if (selectedFile != null) {
+                                    if (selectedFile?.isFile == true) {
                                         currentScreen = AppDestinations.DETAIL
                                     }
                                     true
@@ -308,7 +309,7 @@ fun RomulistApp()
                                         interactionSource = interactionSource,
                                         enabled = when (destination) {
                                             AppDestinations.BACK -> canGoBack
-                                            AppDestinations.DETAIL -> selectedFile != null
+                                            AppDestinations.DETAIL -> selectedFile?.isFile == true
                                             else -> true
                                         },
                                         colors = NavigationBarItemDefaults.colors(
@@ -346,7 +347,7 @@ fun RomulistApp()
                                             if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                                 val isEnabled = when (destination) {
                                                     AppDestinations.BACK -> canGoBack
-                                                    AppDestinations.DETAIL -> selectedFile != null
+                                                    AppDestinations.DETAIL -> selectedFile?.isFile == true
                                                     else -> true
                                                 }
                                                 if (isEnabled) {
