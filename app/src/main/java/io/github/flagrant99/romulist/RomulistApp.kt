@@ -393,6 +393,7 @@ fun RomulistApp()
                                 volumes = volumes,
                                 storageStatsManager = storageStatsManager,
                                 context = context,
+                                swapAB = swapAB,
                                 onVolumeClick = { folder -> selectedFolder = folder },
                                 onBack = handleBack,
                                 onExit = { (context as? Activity)?.finish() }
@@ -404,6 +405,7 @@ fun RomulistApp()
                         currentFolder = selectedFolder,
                         selectedFile = selectedFile,
                         favoritePath = favoriteFolder,
+                        swapAB = swapAB,
                         onBack = handleBack
                     )
 

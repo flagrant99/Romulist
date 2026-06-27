@@ -47,7 +47,8 @@ fun RootScreen(
     onVolumeClick: (File) -> Unit,
     onBack: () -> Unit,
     onExit: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    swapAB: Boolean = false
 ) {
     val firstVolumeFocusRequester = remember { FocusRequester() }
 
@@ -160,6 +161,9 @@ fun RootScreen(
         itemsIndexed(volumes) { index, volume ->
             var isFocused by remember { mutableStateOf(false) }
 
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
             var totalStr = "Unknown"
             var freeStr = "Unknown"
             try
@@ -195,19 +199,13 @@ fun RootScreen(
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
-                                KeyEvent.KEYCODE_BUTTON_B -> {
-                                    onVolumeClick(volume.directory ?: File("/"))
-                                    true
-                                }
-                                KeyEvent.KEYCODE_DPAD_CENTER -> {
-                                    onVolumeClick(volume.directory ?: File("/"))
-                                    true
-                                }
+                                launchKey,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
                                 KeyEvent.KEYCODE_ENTER -> {
                                     onVolumeClick(volume.directory ?: File("/"))
                                     true
                                 }
-                                KeyEvent.KEYCODE_BUTTON_A -> {
+                                backKey -> {
                                     onBack()
                                     true
                                 }
@@ -247,6 +245,9 @@ fun RootScreen(
 
         item {
             var isFocused by remember { mutableStateOf(false) }
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -255,13 +256,13 @@ fun RootScreen(
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
-                                KeyEvent.KEYCODE_BUTTON_B,
+                                launchKey,
                                 KeyEvent.KEYCODE_DPAD_CENTER,
                                 KeyEvent.KEYCODE_ENTER -> {
                                     onExit()
                                     true
                                 }
-                                KeyEvent.KEYCODE_BUTTON_A -> {
+                                backKey -> {
                                     onBack()
                                     true
                                 }

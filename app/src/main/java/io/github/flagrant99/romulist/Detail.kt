@@ -60,6 +60,7 @@ fun Detail(
     currentFolder: File?,
     selectedFile: File?,
     favoritePath: String?,
+    swapAB: Boolean = false,
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -124,6 +125,7 @@ fun Detail(
                             firstIntentFocusRequester,
                             context,
                             romulistConfig,
+                            swapAB,
                             onBack
                         )
                     }
@@ -156,6 +158,7 @@ fun Detail(
                         firstIntentFocusRequester,
                         context,
                         romulistConfig,
+                        swapAB,
                         onBack
                     )
 
@@ -179,6 +182,7 @@ private fun InfoSection(
     firstIntentFocusRequester: FocusRequester,
     context: android.content.Context,
     romulistConfig: EmulatorNavigator.RomulistConfig?,
+    swapAB: Boolean,
     onBack: () -> Unit
 ) {
     if (selectedFile != null) {
@@ -234,6 +238,9 @@ private fun InfoSection(
 
         val displayName = intent.name.ifBlank { "LAUNCH" }
 
+        val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+        val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -243,7 +250,7 @@ private fun InfoSection(
                 .onKeyEvent { keyEvent ->
                     if (keyEvent.type == KeyEventType.KeyUp) {
                         when (keyEvent.nativeKeyEvent.keyCode) {
-                            KeyEvent.KEYCODE_BUTTON_B,
+                            launchKey,
                             KeyEvent.KEYCODE_DPAD_CENTER,
                             KeyEvent.KEYCODE_ENTER -> {
                                 if (isEnabled) {
@@ -256,7 +263,7 @@ private fun InfoSection(
                                 }
                                 true
                             }
-                            KeyEvent.KEYCODE_BUTTON_A -> {
+                            backKey -> {
                                 onBack()
                                 true
                             }
