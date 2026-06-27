@@ -26,4 +26,10 @@ class PersistentSettings(context: Context) {
         set(value) {
             sharedPrefs.edit().putBoolean("swap_ab", value).apply()
         }
+
+    var useLargeFont: Boolean
+        get() = sharedPrefs.getBoolean("use_large_font", false)
+        set(value) {
+            sharedPrefs.edit().putBoolean("use_large_font", value).apply()
+        }
 }

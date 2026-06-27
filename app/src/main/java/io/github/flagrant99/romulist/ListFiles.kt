@@ -62,6 +62,7 @@ fun ListFiles(
     selectedFile: File?,
     listState: LazyListState = rememberLazyListState(),
     swapAB: Boolean = false,
+    useLargeFont: Boolean = false,
     onPathChange: (File) -> Unit,
     onFileSelect: (File) -> Unit,
     onBack: () -> Unit
@@ -322,6 +323,7 @@ fun ListFiles(
                             showIcon = showIcons,
                             isAtHome = isAtHome,
                             swapAB = swapAB,
+                            useLargeFont = useLargeFont,
                             focusRequester = when {
                                 isItemSelected -> selectedItemFocusRequester
                                 index == 0 -> firstItemFocusRequester

@@ -111,6 +111,10 @@ fun RomulistApp()
             mutableStateOf(settings.swapAB)
         }
 
+        var useLargeFont by rememberSaveable {
+            mutableStateOf(settings.useLargeFont)
+        }
+
         val listState = rememberLazyListState()
 
         val handleHome = {
@@ -382,6 +386,7 @@ fun RomulistApp()
                                 selectedFile = selectedFile,
                                 listState = listState,
                                 swapAB = swapAB,
+                                useLargeFont = useLargeFont,
                                 onPathChange = { 
                                     selectedFolder = it 
                                     selectedFile = null
@@ -415,6 +420,7 @@ fun RomulistApp()
                         homePath = favoriteFolder,
                         useNavRail = useNavRail,
                         swapAB = swapAB,
+                        useLargeFont = useLargeFont,
                         onToggleNavRail = { 
                             useNavRail = it
                             settings.useNavRail = it
@@ -422,6 +428,10 @@ fun RomulistApp()
                         onToggleSwapAB = {
                             swapAB = it
                             settings.swapAB = it
+                        },
+                        onToggleLargeFont = {
+                            useLargeFont = it
+                            settings.useLargeFont = it
                         },
                         onSetHome = { path ->
                             favoriteFolder = path
