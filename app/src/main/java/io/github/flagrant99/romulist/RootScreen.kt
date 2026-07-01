@@ -141,11 +141,13 @@ fun RootScreen(
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
-                Text(
-                    text = "Usable RAM: $usableRamStr",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                    color = Color.Green
-                )
+                if (usableRamStr != totalRamStr) {
+                    Text(
+                        text = "Usable RAM: $usableRamStr",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                        color = Color.Green
+                    )
+                }
                 Text(
                     text = "Total RAM: $totalRamStr",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
