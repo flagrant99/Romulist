@@ -107,16 +107,20 @@ fun RootScreen(
                 val usableRamBytes = memoryInfo.totalMem
                 val usableRamStr = formatRam(usableRamBytes)
 
-                val totalRamBytes = if (android.os.Build.VERSION.SDK_INT >= 34) {
-                    memoryInfo.advertisedMem
-                } else {
-                    // Heuristic: Round up to the nearest common RAM tier (1, 2, 3, 4, 6, 8, 12, 16, 24, 32 GB)
+                val physicalRamBytes = run {
                     val gb = usableRamBytes.toDouble() / (1024.0 * 1024.0 * 1024.0)
-                    val tiers = listOf(1, 2, 3, 4, 6, 8, 12, 16, 24, 32)
+                    val tiers = listOf(1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64)
                     val matchedTier = tiers.firstOrNull { it >= gb } ?: gb.toInt()
                     matchedTier.toLong() * 1024 * 1024 * 1024
                 }
-                val totalRamStr = formatRam(totalRamBytes)
+                val physicalRamStr = formatRam(physicalRamBytes)
+
+                val advertisedRamBytes = if (android.os.Build.VERSION.SDK_INT >= 34) {
+                    memoryInfo.advertisedMem
+                } else {
+                    physicalRamBytes
+                }
+                val virtualRamStr = formatRam(advertisedRamBytes)
 
                 Text(
                     text = "SYSTEM INFO",
@@ -141,7 +145,7 @@ fun RootScreen(
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
-                if (usableRamStr != totalRamStr) {
+                if (usableRamStr != physicalRamStr) {
                     Text(
                         text = "Usable RAM: $usableRamStr",
                         style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
@@ -149,10 +153,17 @@ fun RootScreen(
                     )
                 }
                 Text(
-                    text = "Total RAM: $totalRamStr",
+                    text = "Physical RAM: $physicalRamStr",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green
                 )
+                if (virtualRamStr != physicalRamStr) {
+                    Text(
+                        text = "Virtual RAM: $virtualRamStr",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                        color = Color.Green
+                    )
+                }
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
                     color = Color.Green.copy(alpha = 0.3f)
