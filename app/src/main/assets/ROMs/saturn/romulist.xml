@@ -15,11 +15,11 @@
 		    </intent>
 		 </alt_intents>
 		 <media>
-			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/saturn/covers</cover>
-			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/saturn/marquees</marquee>
-			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/saturn/miximages</mixart>
-			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/saturn/screenshots</screen>
-			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/saturn/videos</video>
+			<cover type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/$PARENT_FOLDER_NAME/covers</cover>
+			<marquee type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/$PARENT_FOLDER_NAME$PARENT_FOLDER_NAMEturn/marquees</marquee>
+			<mixart type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/$PARENT_FOLDER_NAME/miximages</mixart>
+			<screen type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/$PARENT_FOLDER_NAME/screenshots</screen>
+			<video type="fixed" useSubfolder="true">/storage/emulated/0/ES-DE/downloaded_media/$PARENT_FOLDER_NAME/videos</video>
 		 </media>
 	</folder>
 	<exclusions>
