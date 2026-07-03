@@ -14,7 +14,8 @@ object EmulatorNavigator {
 
     data class RomulistConfig(
         val systemConfig: FolderConfig?, 
-        val nameExclusions: List<String> = emptyList()
+        val nameExclusions: List<String> = emptyList(),
+        val configSource: String? = null
     )
     
     data class MediaItem(
@@ -24,9 +25,13 @@ object EmulatorNavigator {
     ) {
         fun resolvePath(configSource: String?): String? {
             val p = path ?: return null
-            if (type == "fixed") return p
-            val configPath = configSource ?: return null
-            return File(File(configPath).parentFile, p).absolutePath
+            val configParent = configSource?.let { File(it).parentFile }
+            val parentFolderName = configParent?.name ?: ""
+            val substitutedPath = p.replace("\$PARENT_FOLDER_NAME", parentFolderName)
+
+            if (type == "fixed") return substitutedPath
+            if (configParent == null) return null
+            return File(configParent, substitutedPath).absolutePath
         }
 
         fun resolveMediaFile(configSource: String?, selectedFile: File?, extensions: List<String>): File? {
@@ -237,7 +242,7 @@ object EmulatorNavigator {
             }
             inputStream.close()
             android.util.Log.d("Romulist", "--- Finished parse. systemConfig found: ${systemConfig != null} ---")
-            return RomulistConfig(systemConfig, exclusions)
+            return RomulistConfig(systemConfig, exclusions, file.absolutePath)
         } catch (e: Exception) {
             android.util.Log.e("Romulist", "Failed to open/parse config: ${e.message}")
             return null
@@ -279,7 +284,7 @@ object EmulatorNavigator {
                 setPackage(packageName)
             }
             
-            action = if (currentIntentCfg.action.isNotEmpty()) currentIntentCfg.action else Intent.ACTION_VIEW
+            action = currentIntentCfg.action.ifEmpty { Intent.ACTION_VIEW }
 
             currentIntentCfg.categories.forEach { addCategory(it) }
 
