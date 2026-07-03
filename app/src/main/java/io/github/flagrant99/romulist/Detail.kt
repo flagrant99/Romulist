@@ -306,6 +306,24 @@ internal fun DetailMediaSectionVertical(
     configSource: String?,
     selectedFile: File?
 ) {
+    DetailMediaContent(system, configSource, selectedFile)
+}
+
+@Composable
+internal fun DetailMediaSectionLandscape(
+    system: EmulatorNavigator.FolderConfig,
+    configSource: String?,
+    selectedFile: File?
+) {
+    DetailMediaContent(system, configSource, selectedFile)
+}
+
+@Composable
+private fun DetailMediaContent(
+    system: EmulatorNavigator.FolderConfig,
+    configSource: String?,
+    selectedFile: File?
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val mediaPlayerRef = remember { mutableStateOf<MediaPlayer?>(null) }
 
@@ -337,23 +355,23 @@ internal fun DetailMediaSectionVertical(
     val mixartFile = remember(system.media?.mixart, configSource, selectedFile) {
         system.media?.mixart?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
     }
-    val mixartBitmap = remember(mixartFile, system.media?.screen, configSource, selectedFile) {
-        var bitmap = try {
+    val mixartBitmap = remember(mixartFile) {
+        try {
             mixartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
         } catch (_: Exception) {
             null
         }
+    }
 
-        // Fallback to screen if mixart file wasn't found or couldn't be decoded
-        if (bitmap == null && selectedFile != null) {
-            val screenFile = system.media?.screen?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
-            bitmap = try {
-                screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-            } catch (_: Exception) {
-                null
-            }
+    val screenFile = remember(system.media?.screen, configSource, selectedFile) {
+        system.media?.screen?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
+    }
+    val screenBitmap = remember(screenFile) {
+        try {
+            screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
+        } catch (_: Exception) {
+            null
         }
-        bitmap
     }
 
     val marqueeBitmap = remember(system.media?.marquee, configSource, selectedFile) {
@@ -402,6 +420,18 @@ internal fun DetailMediaSectionVertical(
                     }
                 }
             }
+        }
+
+        if (screenBitmap != null) {
+            Image(
+                bitmap = screenBitmap,
+                contentDescription = "Screenshot",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Fit
+            )
         }
 
         if (videoFile != null) {
@@ -473,79 +503,4 @@ internal fun DetailMediaSectionVertical(
     }
 }
 
-@Composable
-internal fun DetailMediaSectionLandscape(
-    system: EmulatorNavigator.FolderConfig,
-    configSource: String?,
-    selectedFile: File?
-) {
-    val boxartFile = remember(system.media?.cover, configSource, selectedFile) {
-        system.media?.cover?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
-    }
-    val boxartBitmap = remember(boxartFile) {
-        try {
-            boxartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    val mixartFile = remember(system.media?.mixart, configSource, selectedFile) {
-        system.media?.mixart?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
-    }
-    val mixartBitmap = remember(mixartFile, system.media?.screen, configSource, selectedFile) {
-        var bitmap = try {
-            mixartFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-        } catch (_: Exception) {
-            null
-        }
-
-        // Fallback to screen if mixart file wasn't found or couldn't be decoded
-        if (bitmap == null && selectedFile != null) {
-            val screenFile = system.media?.screen?.resolveMediaFile(configSource, selectedFile, listOf(".png", ".jpg", ".PNG", ".JPG"))
-            bitmap = try {
-                screenFile?.absolutePath?.let { BitmapFactory.decodeFile(it)?.asImageBitmap() }
-            } catch (_: Exception) {
-                null
-            }
-        }
-        bitmap
-    }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        if (boxartBitmap != null || mixartBitmap != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    if (boxartBitmap != null) {
-                        Image(
-                            bitmap = boxartBitmap,
-                            contentDescription = "Boxart",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    if (mixartBitmap != null) {
-                        Image(
-                            bitmap = mixartBitmap,
-                            contentDescription = "Mixart",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
