@@ -197,7 +197,7 @@ fun RomulistApp()
                     contentColor = Color.Green,
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME }
+                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST }
                         .forEach { destination ->
                             val isSelected = if (destination == AppDestinations.BACK) false
                             else currentScreen == destination
@@ -299,7 +299,7 @@ fun RomulistApp()
                 bottomBar = {
                     if (!showRail) {
                         NavigationBar {
-                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME }
+                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST }
                                 .forEach { destination ->
 
                                     // 1. Determine if this item is selected
@@ -401,6 +401,7 @@ fun RomulistApp()
                                 context = context,
                                 swapAB = swapAB,
                                 onVolumeClick = { folder -> selectedFolder = folder },
+                                onListPackages = { currentScreen = AppDestinations.PACKAGE_LIST },
                                 onBack = handleBack,
                                 onExit = { (context as? Activity)?.finish() }
                             )
@@ -441,6 +442,11 @@ fun RomulistApp()
                                 selectedFolder = File(path)
                             }
                         }
+                    )
+
+                    AppDestinations.PACKAGE_LIST -> PackageList(
+                        onBack = handleBack,
+                        swapAB = swapAB
                     )
 
                     AppDestinations.BACK -> { /* Handled in onClick above */ }

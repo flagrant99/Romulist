@@ -8,5 +8,6 @@ enum class AppDestinations(
     BACK("Back", R.drawable.baseline_arrow_back_24),
     HOME("Home", R.drawable.outline_castle_24),
     DETAIL("Detail", R.drawable.outline_rocket_launch_24),
-    SET_HOME("Set Home", R.drawable.ic_home);
+    SET_HOME("Set Home", R.drawable.ic_home),
+    PACKAGE_LIST("List Packages", R.drawable.ic_account_box);
 }
