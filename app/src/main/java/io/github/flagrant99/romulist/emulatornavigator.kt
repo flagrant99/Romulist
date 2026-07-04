@@ -252,7 +252,7 @@ object EmulatorNavigator {
     fun launchGame(context: Context, filePath: String, config: RomulistConfig? = null, preferredIntent: IntentConfig? = null) {
         var intentCfg = preferredIntent ?: config?.systemConfig?.mainIntent
 
-        if (filePath.lowercase().endsWith(".rax")) {
+        if (preferredIntent == null && filePath.lowercase().endsWith(".rax")) {
             val raxFile = File(filePath)
             if (raxFile.exists()) {
                 val raxConfig = parseConfig(raxFile)

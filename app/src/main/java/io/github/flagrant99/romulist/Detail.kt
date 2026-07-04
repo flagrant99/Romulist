@@ -68,18 +68,7 @@ fun Detail(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val firstIntentFocusRequester = remember { FocusRequester() }
 
-    var configSource by remember { mutableStateOf<String?>(null) }
-    val displayConfigSource = remember(configSource, favoritePath) {
-        val source = configSource ?: return@remember "Internal"
-        if (favoritePath != null && source.startsWith(favoritePath)) {
-            source.substring(favoritePath.length).trimStart(File.separatorChar)
-                .ifEmpty { "romulist.xml" }
-        } else {
-            source
-        }
-    }
-
-    val romulistConfig = remember(selectedFile ?: currentFolder, favoritePath) {
+    val folderConfig = remember(selectedFile ?: currentFolder, favoritePath) {
         var dir: File? = selectedFile ?: currentFolder
         val favFile = favoritePath?.let { File(it) }
         var foundConfig: EmulatorNavigator.RomulistConfig? = null
@@ -87,7 +76,6 @@ fun Detail(
         while (dir != null) {
             val configFile = File(dir, "romulist.xml")
             if (configFile.exists()) {
-                configSource = configFile.absolutePath
                 foundConfig = EmulatorNavigator.parseConfig(configFile)
                 if (foundConfig != null) break
             }
@@ -95,6 +83,30 @@ fun Detail(
             dir = dir.parentFile
         }
         foundConfig
+    }
+
+    val romulistConfig = remember(selectedFile, folderConfig) {
+        if (selectedFile?.name?.lowercase()?.endsWith(".rax") == true) {
+            val raxConfig = EmulatorNavigator.parseConfig(selectedFile)
+            if (raxConfig?.systemConfig != null) {
+                return@remember raxConfig.copy(
+                    systemConfig = raxConfig.systemConfig.copy(
+                        media = folderConfig?.systemConfig?.media
+                    )
+                )
+            }
+        }
+        folderConfig
+    }
+
+    val displayConfigSource = remember(romulistConfig?.configSource, favoritePath) {
+        val source = romulistConfig?.configSource ?: return@remember "Internal"
+        if (favoritePath != null && source.startsWith(favoritePath)) {
+            source.substring(favoritePath.length).trimStart(File.separatorChar)
+                .ifEmpty { "romulist.xml" }
+        } else {
+            source
+        }
     }
 
     LaunchedEffect(romulistConfig) {
@@ -142,7 +154,7 @@ fun Detail(
                             .weight(1f)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        DetailMediaSectionLandscape(system, configSource, selectedFile)
+                        DetailMediaSectionLandscape(system, folderConfig?.configSource, selectedFile)
                     }
                 }
             } else {
@@ -167,7 +179,7 @@ fun Detail(
                         color = Color.Green.copy(alpha = 0.3f)
                     )
 
-                    DetailMediaSectionVertical(system, configSource, selectedFile)
+                    DetailMediaSectionVertical(system, folderConfig?.configSource, selectedFile)
                 }
             }
         }
