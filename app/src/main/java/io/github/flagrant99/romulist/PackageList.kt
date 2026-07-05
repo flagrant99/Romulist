@@ -1,6 +1,8 @@
 package io.github.flagrant99.romulist
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
@@ -31,8 +33,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import android.view.KeyEvent
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PackageList(
+    onPackageSelect: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     swapAB: Boolean = false
@@ -80,16 +84,22 @@ fun PackageList(
         items(packageNames) { packageName ->
             var isFocused by remember { mutableStateOf(false) }
             val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+            val focusRequester = if (packageName == packageNames.firstOrNull()) firstItemFocusRequester else remember { FocusRequester() }
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(if (packageName == packageNames.firstOrNull()) Modifier.focusRequester(firstItemFocusRequester) else Modifier)
+                    .focusRequester(focusRequester)
                     .onFocusChanged { isFocused = it.isFocused }
                     .focusable()
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
+                                launchKey -> {
+                                    onPackageSelect(packageName)
+                                    true
+                                }
                                 backKey -> {
                                     onBack()
                                     true
@@ -99,6 +109,10 @@ fun PackageList(
                         } else false
                     }
                     .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .combinedClickable(
+                        onClick = { focusRequester.requestFocus() },
+                        onLongClick = { onPackageSelect(packageName) }
+                    )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(

@@ -9,5 +9,6 @@ enum class AppDestinations(
     HOME("Home", R.drawable.outline_castle_24),
     DETAIL("Detail", R.drawable.outline_rocket_launch_24),
     SET_HOME("Set Home", R.drawable.ic_home),
-    PACKAGE_LIST("List Packages", R.drawable.ic_account_box);
+    PACKAGE_LIST("List Packages", R.drawable.ic_account_box),
+    ACTIVITY_LIST("Activities", R.drawable.outline_settings_24);
 }

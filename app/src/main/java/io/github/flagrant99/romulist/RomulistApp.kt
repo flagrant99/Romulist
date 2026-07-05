@@ -115,6 +115,10 @@ fun RomulistApp()
             mutableStateOf(settings.useLargeFont)
         }
 
+        var selectedPackageName by rememberSaveable {
+            mutableStateOf<String?>(null)
+        }
+
         val listState = rememberLazyListState()
 
         val handleHome = {
@@ -144,6 +148,9 @@ fun RomulistApp()
             val parent = selectedFolder?.parentFile
 
             when {
+                currentScreen == AppDestinations.ACTIVITY_LIST -> {
+                    currentScreen = AppDestinations.PACKAGE_LIST
+                }
                 // 1. If we are on a different tab, go back to Home first (keeping folder state)
                 currentScreen != AppDestinations.HOME -> {
                     currentScreen = AppDestinations.HOME
@@ -197,7 +204,7 @@ fun RomulistApp()
                     contentColor = Color.Green,
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST }
+                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST }
                         .forEach { destination ->
                             val isSelected = if (destination == AppDestinations.BACK) false
                             else currentScreen == destination
@@ -299,7 +306,7 @@ fun RomulistApp()
                 bottomBar = {
                     if (!showRail) {
                         NavigationBar {
-                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST }
+                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST }
                                 .forEach { destination ->
 
                                     // 1. Determine if this item is selected
@@ -445,6 +452,16 @@ fun RomulistApp()
                     )
 
                     AppDestinations.PACKAGE_LIST -> PackageList(
+                        onPackageSelect = {
+                            selectedPackageName = it
+                            currentScreen = AppDestinations.ACTIVITY_LIST
+                        },
+                        onBack = handleBack,
+                        swapAB = swapAB
+                    )
+
+                    AppDestinations.ACTIVITY_LIST -> ActivitiesList(
+                        packageName = selectedPackageName ?: "",
                         onBack = handleBack,
                         swapAB = swapAB
                     )
