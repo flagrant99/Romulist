@@ -39,15 +39,55 @@ fun ActivitiesList(
     swapAB: Boolean = false
 ) {
     val context = LocalContext.current
-    val activityNames = remember(packageName) {
+    val packageInfo = remember(packageName) {
         try {
-            val packageInfo = context.packageManager.getPackageInfo(
+            context.packageManager.getPackageInfo(
                 packageName,
                 PackageManager.GET_ACTIVITIES
             )
-            packageInfo.activities?.map { it.name }?.sorted() ?: emptyList()
         } catch (_: Exception) {
-            emptyList<String>()
+            null
+        }
+    }
+
+    val activityNames = remember(packageInfo) {
+        packageInfo?.activities?.map { it.name }?.sorted() ?: emptyList()
+    }
+
+    val appName = remember(packageInfo) {
+        try {
+            val pm = context.packageManager
+            packageInfo?.applicationInfo?.let { pm.getApplicationLabel(it).toString() } ?: "Unknown"
+        } catch (_: Exception) {
+            "Unknown"
+        }
+    }
+
+    val appVersion = remember(packageInfo) {
+        packageInfo?.let { "${it.versionName} (${it.longVersionCode})" } ?: "Unknown"
+    }
+
+    val targetSdk = remember(packageInfo) {
+        packageInfo?.applicationInfo?.targetSdkVersion?.toString() ?: "Unknown"
+    }
+
+    val targetAndroidVersion = remember(packageInfo) {
+        val sdk = packageInfo?.applicationInfo?.targetSdkVersion ?: 0
+        when (sdk) {
+            36 -> "16"
+            35 -> "15"
+            34 -> "14"
+            33 -> "13"
+            32 -> "12L"
+            31 -> "12"
+            30 -> "11"
+            29 -> "10"
+            28 -> "9"
+            27 -> "8.1"
+            26 -> "8.0"
+            25 -> "7.1"
+            24 -> "7.0"
+            else -> if (sdk > 0) "API $sdk" else "Unknown"
         }
     }
 
@@ -72,6 +112,26 @@ fun ActivitiesList(
                 )
                 Text(
                     text = "Package: $packageName",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "App: $appName",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Version: $appVersion",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Target SDK: $targetSdk",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Target Android: $targetAndroidVersion",
                     style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green.copy(alpha = 0.7f)
                 )
