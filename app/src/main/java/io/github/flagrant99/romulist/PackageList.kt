@@ -135,7 +135,7 @@ fun PackageList(
                             fontFamily = FontFamily.Monospace,
                             shadow = if (isToggleFocused) Shadow(Color.Green.copy(alpha = 0.5f), blurRadius = 8f) else null
                         ),
-                        color = if (showSystemPackages) Color.Green else Color.Red
+                        color = if (showSystemPackages) Color.Red else Color.Green
                     )
                 }
 
