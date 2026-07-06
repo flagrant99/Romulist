@@ -56,7 +56,7 @@ import android.net.Uri
 import java.io.File
 
 @Composable
-fun Detail(
+fun FileDetail(
     currentFolder: File?,
     selectedFile: File?,
     favoritePath: String?,
@@ -514,5 +514,3 @@ private fun DetailMediaContent(
         }
     }
 }
-
-

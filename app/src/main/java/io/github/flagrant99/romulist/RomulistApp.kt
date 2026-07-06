@@ -216,7 +216,7 @@ fun RomulistApp()
                                 interactionSource = interactionSource,
                                 enabled = when (destination) {
                                     AppDestinations.BACK -> canGoBack
-                                    AppDestinations.DETAIL -> selectedFile?.isFile == true
+                                    AppDestinations.DETAIL -> selectedFile != null
                                     else -> true
                                 },
                                 colors = NavigationRailItemDefaults.colors(
@@ -252,7 +252,7 @@ fun RomulistApp()
                                         if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                             val isEnabled = when (destination) {
                                                 AppDestinations.BACK -> canGoBack
-                                                AppDestinations.DETAIL -> selectedFile?.isFile == true
+                                                AppDestinations.DETAIL -> selectedFile != null
                                                 else -> true
                                             }
                                             if (isEnabled) {
@@ -293,7 +293,7 @@ fun RomulistApp()
                                 }
 
                                 detailKey -> {
-                                    if (selectedFile?.isFile == true) {
+                                    if (selectedFile != null) {
                                         currentScreen = AppDestinations.DETAIL
                                     }
                                     true
@@ -320,7 +320,7 @@ fun RomulistApp()
                                         interactionSource = interactionSource,
                                         enabled = when (destination) {
                                             AppDestinations.BACK -> canGoBack
-                                            AppDestinations.DETAIL -> selectedFile?.isFile == true
+                                            AppDestinations.DETAIL -> selectedFile != null
                                             else -> true
                                         },
                                         colors = NavigationBarItemDefaults.colors(
@@ -358,7 +358,7 @@ fun RomulistApp()
                                             if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                                 val isEnabled = when (destination) {
                                                     AppDestinations.BACK -> canGoBack
-                                                    AppDestinations.DETAIL -> selectedFile?.isFile == true
+                                                    AppDestinations.DETAIL -> selectedFile != null
                                                     else -> true
                                                 }
                                                 if (isEnabled) {
@@ -415,13 +415,25 @@ fun RomulistApp()
                         }
                     }
 
-                    AppDestinations.DETAIL -> Detail(
-                        currentFolder = selectedFolder,
-                        selectedFile = selectedFile,
-                        favoritePath = favoriteFolder,
-                        swapAB = swapAB,
-                        onBack = handleBack
-                    )
+                    AppDestinations.DETAIL -> {
+                        val file = selectedFile
+                        if (file != null) {
+                            if (file.isDirectory) {
+                                FolderDetail(
+                                    folder = file,
+                                    onBack = handleBack
+                                )
+                            } else {
+                                FileDetail(
+                                    currentFolder = selectedFolder,
+                                    selectedFile = selectedFile,
+                                    favoritePath = favoriteFolder,
+                                    swapAB = swapAB,
+                                    onBack = handleBack
+                                )
+                            }
+                        }
+                    }
 
                     AppDestinations.SET_HOME -> SetHomeFolder(
                         currentFolder = selectedFolder,
