@@ -119,6 +119,8 @@ fun RomulistApp()
             mutableStateOf<String?>(null)
         }
 
+        var triggerDetailPrint by remember { mutableStateOf(false) }
+
         val listState = rememberLazyListState()
 
         val handleHome = {
@@ -246,6 +248,21 @@ fun RomulistApp()
                                             }
                                         }
                                     }
+                                } else if (destination == AppDestinations.DETAIL) {
+                                    Modifier.pointerInput(Unit) {
+                                        awaitEachGesture {
+                                            awaitFirstDown(pass = PointerEventPass.Initial)
+                                            val timeout = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                                waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                            }
+                                            if (timeout == null) {
+                                                if (currentScreen == AppDestinations.DETAIL && selectedFile?.isDirectory == true) {
+                                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    triggerDetailPrint = true
+                                                }
+                                            }
+                                        }
+                                    }
                                 } else Modifier)
                                     .padding(vertical = 24.dp)
                                     .onKeyEvent { keyEvent ->
@@ -354,6 +371,21 @@ fun RomulistApp()
                                                     }
                                                 }
                                             }
+                                        } else if (destination == AppDestinations.DETAIL) {
+                                            Modifier.pointerInput(Unit) {
+                                                awaitEachGesture {
+                                                    awaitFirstDown(pass = PointerEventPass.Initial)
+                                                    val timeout = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                                        waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                                    }
+                                                    if (timeout == null) {
+                                                        if (currentScreen == AppDestinations.DETAIL && selectedFile?.isDirectory == true) {
+                                                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                            triggerDetailPrint = true
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         } else Modifier).onKeyEvent { keyEvent ->
                                             if (keyEvent.type == KeyEventType.KeyUp && keyEvent.nativeKeyEvent.keyCode == launchKey) {
                                                 val isEnabled = when (destination) {
@@ -422,6 +454,8 @@ fun RomulistApp()
                             if (file.isDirectory) {
                                 FolderDetail(
                                     folder = file,
+                                    triggerPrint = triggerDetailPrint,
+                                    onPrintHandled = { triggerDetailPrint = false },
                                     onBack = handleBack
                                 )
                             } else {

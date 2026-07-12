@@ -25,9 +25,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import android.os.Environment
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintWriter
 import java.util.Locale
 
 enum class SortColumn {
@@ -47,8 +54,19 @@ data class FolderStats(
 @Composable
 fun FolderDetail(
     folder: File,
+    triggerPrint: Boolean = false,
+    onPrintHandled: () -> Unit = {},
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    var showPrintDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(triggerPrint) {
+        if (triggerPrint) {
+            showPrintDialog = true
+            onPrintHandled()
+        }
+    }
     var subfolders by remember(folder) { mutableStateOf<List<FolderStats>>(emptyList()) }
     var totalStats by remember(folder) { mutableStateOf<Pair<Long, Long>?>(null) }
     var isLoading by remember(folder) { mutableStateOf(true) }
@@ -281,6 +299,113 @@ fun FolderDetail(
                 }
             }
         }
+    }
+
+    if (showPrintDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrintDialog = false },
+            title = { Text("Print to HTML") },
+            text = { Text("Do you want to print to html?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showPrintDialog = false
+                    generateHtmlReport(
+                        context,
+                        folder,
+                        volumePath,
+                        totalSpace,
+                        usedSpace,
+                        freeSpace,
+                        totalStats,
+                        sortedSubfolders
+                    )
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPrintDialog = false }) {
+                    Text("No")
+                }
+            }
+        )
+    }
+}
+
+private fun generateHtmlReport(
+    context: android.content.Context,
+    folder: File,
+    volumePath: String,
+    totalSpace: Long,
+    usedSpace: Long,
+    freeSpace: Long,
+    totalStats: Pair<Long, Long>?,
+    sortedSubfolders: List<FolderStats>
+) {
+    try {
+        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+        if (!documentsDir.exists()) documentsDir.mkdirs()
+
+        val fileName = "romulst_${folder.name}.html"
+        val outFile = File(documentsDir, fileName)
+
+        PrintWriter(FileOutputStream(outFile)).use { pw ->
+            pw.println("<!DOCTYPE html>")
+            pw.println("<html>")
+            pw.println("<head>")
+            pw.println("<meta charset=\"UTF-8\">")
+            pw.println("<title>Folder Report - ${folder.name}</title>")
+            pw.println("<style>")
+            pw.println("body { font-family: monospace; background-color: #000; color: #0f0; padding: 20px; }")
+            pw.println("h1 { color: #0f0; border-bottom: 1px solid #0f0; padding-bottom: 10px; }")
+            pw.println(".stats { color: #888; margin-bottom: 20px; }")
+            pw.println("table { width: 100%; border-collapse: collapse; margin-top: 20px; }")
+            pw.println("th, td { text-align: left; padding: 10px; border-bottom: 1px solid #222; }")
+            pw.println("th { color: #0f0; border-bottom: 2px solid #0f0; }")
+            pw.println(".totals { font-weight: bold; color: #fff; background-color: #111; }")
+            pw.println(".num { text-align: right; }")
+            pw.println("</style>")
+            pw.println("</head>")
+            pw.println("<body>")
+            pw.println("<h1>FOLDER: ${folder.name}</h1>")
+            pw.println("<div class=\"stats\">")
+            pw.println("VOLUME: $volumePath<br>")
+            pw.println("SIZE: ${formatSize(totalSpace)} | USED: ${formatSize(usedSpace)} | FREE: ${formatSize(freeSpace)}")
+            pw.println("</div>")
+
+            pw.println("<table>")
+            pw.println("<thead>")
+            pw.println("<tr><th>Name</th><th class=\"num\">Size</th><th class=\"num\">Used</th></tr>")
+            pw.println("</thead>")
+            pw.println("<tbody>")
+
+            // Totals Row
+            totalStats?.let { stats ->
+                pw.println("<tr class=\"totals\">")
+                pw.println("<td>TOTALS</td>")
+                pw.println("<td class=\"num\">${formatSize(stats.first)}</td>")
+                pw.println("<td class=\"num\">${formatSize(stats.second)}</td>")
+                pw.println("</tr>")
+            }
+
+            // Subfolders
+            for (stats in sortedSubfolders) {
+                pw.println("<tr>")
+                pw.println("<td>${stats.file.name}</td>")
+                pw.println("<td class=\"num\">${formatSize(stats.size)}</td>")
+                pw.println("<td class=\"num\">${formatSize(stats.used)}</td>")
+                pw.println("</tr>")
+            }
+
+            pw.println("</tbody>")
+            pw.println("</table>")
+            pw.println("</body>")
+            pw.println("</html>")
+        }
+
+        Toast.makeText(context, "Saved to ${outFile.absolutePath}", Toast.LENGTH_LONG).show()
+    } catch (e: Exception) {
+        Toast.makeText(context, "Failed to save report: ${e.message}", Toast.LENGTH_LONG).show()
     }
 }
 
