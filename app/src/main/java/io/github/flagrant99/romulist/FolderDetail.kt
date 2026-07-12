@@ -83,11 +83,30 @@ fun FolderDetail(
         }
     }
 
+    val totalSpace = remember(folder) { folder.totalSpace }
+    val freeSpace = remember(folder) { folder.usableSpace }
+    val usedSpace = totalSpace - freeSpace
+    val volumePath = remember(folder, totalSpace) {
+        var root = folder
+        var parent = root.parentFile
+        while (parent != null && parent.totalSpace == totalSpace && parent.totalSpace > 0) {
+            root = parent
+            parent = root.parentFile
+        }
+        root.absolutePath
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        Text(
+            text = "VOLUME: $volumePath  SIZE: ${formatSize(totalSpace)}  USED: ${formatSize(usedSpace)}  FREE: ${formatSize(freeSpace)}",
+            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
         Text(
             text = "FOLDER: ${folder.name}",
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace),

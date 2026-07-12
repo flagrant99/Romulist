@@ -408,6 +408,7 @@ fun RomulistApp()
                                 context = context,
                                 swapAB = swapAB,
                                 onVolumeClick = { folder -> selectedFolder = folder },
+                                onVolumeFocus = { file -> selectedFile = file },
                                 onListPackages = { currentScreen = AppDestinations.PACKAGE_LIST },
                                 onBack = handleBack,
                                 onExit = { (context as? Activity)?.finish() }

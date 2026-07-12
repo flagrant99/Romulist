@@ -45,6 +45,7 @@ fun RootScreen(
     storageStatsManager: StorageStatsManager?,
     context: Context,
     onVolumeClick: (File) -> Unit,
+    onVolumeFocus: (File?) -> Unit,
     onListPackages: () -> Unit,
     onBack: () -> Unit,
     onExit: () -> Unit,
@@ -208,7 +209,12 @@ fun RootScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(if (index == 0) firstVolumeFocusRequester else remember { FocusRequester() })
-                    .onFocusChanged { isFocused = it.isFocused }
+                    .onFocusChanged { 
+                        isFocused = it.isFocused 
+                        if (it.isFocused) {
+                            onVolumeFocus(volume.directory ?: File("/"))
+                        }
+                    }
                     .focusable()
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
@@ -265,7 +271,12 @@ fun RootScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .onFocusChanged { isFocused = it.isFocused }
+                    .onFocusChanged { 
+                        isFocused = it.isFocused 
+                        if (it.isFocused) {
+                            onVolumeFocus(null)
+                        }
+                    }
                     .focusable()
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
@@ -319,7 +330,12 @@ fun RootScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .onFocusChanged { isFocused = it.isFocused }
+                    .onFocusChanged { 
+                        isFocused = it.isFocused 
+                        if (it.isFocused) {
+                            onVolumeFocus(null)
+                        }
+                    }
                     .focusable()
                     .onKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
