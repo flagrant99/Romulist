@@ -212,7 +212,8 @@ fun RootScreen(
                     .onFocusChanged { 
                         isFocused = it.isFocused 
                         if (it.isFocused) {
-                            onVolumeFocus(volume.directory ?: File("/"))
+                            val root = volume.directory ?: if (volume.isPrimary) android.os.Environment.getExternalStorageDirectory() else File("/")
+                            onVolumeFocus(root)
                         }
                     }
                     .focusable()
@@ -222,7 +223,8 @@ fun RootScreen(
                                 launchKey,
                                 KeyEvent.KEYCODE_DPAD_CENTER,
                                 KeyEvent.KEYCODE_ENTER -> {
-                                    onVolumeClick(volume.directory ?: File("/"))
+                                    val root = volume.directory ?: if (volume.isPrimary) android.os.Environment.getExternalStorageDirectory() else File("/")
+                                    onVolumeClick(root)
                                     true
                                 }
                                 backKey -> {
@@ -235,7 +237,8 @@ fun RootScreen(
                     }
                     .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
                     .clickable {
-                        onVolumeClick(volume.directory ?: File("/"))
+                        val root = volume.directory ?: if (volume.isPrimary) android.os.Environment.getExternalStorageDirectory() else File("/")
+                        onVolumeClick(root)
                     }
                     .padding(16.dp)
             )
