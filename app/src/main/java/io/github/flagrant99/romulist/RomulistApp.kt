@@ -123,6 +123,14 @@ fun RomulistApp()
 
         val listState = rememberLazyListState()
 
+        val chromeExtensions = listOf("txt", "png", "jpg", "xml", "html", "pdf")
+
+        val shouldOpenWithChrome = { file: File ->
+            val ext = file.extension.lowercase()
+            val isFavorite = favoriteFolder?.let { file.absolutePath.startsWith(it) } ?: false
+            !isFavorite && chromeExtensions.contains(ext)
+        }
+
         val handleHome = {
             if (favoriteFolder == null) {
                 currentScreen = AppDestinations.SET_HOME
@@ -190,6 +198,15 @@ fun RomulistApp()
                         handleHome()
                     }
                     isHomeLongPressActive = false
+                }
+                AppDestinations.DETAIL -> {
+                    if (selectedFile != null) {
+                        if (shouldOpenWithChrome(selectedFile!!)) {
+                            openWithChrome(context, selectedFile!!)
+                        } else {
+                            currentScreen = AppDestinations.DETAIL
+                        }
+                    }
                 }
                 else -> currentScreen = destination
             }
@@ -311,7 +328,11 @@ fun RomulistApp()
 
                                 detailKey -> {
                                     if (selectedFile != null) {
-                                        currentScreen = AppDestinations.DETAIL
+                                        if (shouldOpenWithChrome(selectedFile!!)) {
+                                            openWithChrome(context, selectedFile!!)
+                                        } else {
+                                            currentScreen = AppDestinations.DETAIL
+                                        }
                                     }
                                     true
                                 }
@@ -430,7 +451,14 @@ fun RomulistApp()
                                     selectedFolder = it 
                                     selectedFile = null
                                 },
-                                onFileSelect = { selectedFile = it },
+                                onFileSelect = { file ->
+                                    selectedFile = file
+                                },
+                                onLaunch = { file ->
+                                    if (shouldOpenWithChrome(file)) {
+                                        openWithChrome(context, file)
+                                    }
+                                },
                                 onBack = handleBack
                             )
                         } else {

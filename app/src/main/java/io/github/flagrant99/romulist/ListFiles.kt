@@ -65,6 +65,7 @@ fun ListFiles(
     useLargeFont: Boolean = false,
     onPathChange: (File) -> Unit,
     onFileSelect: (File) -> Unit,
+    onLaunch: (File) -> Unit = {},
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -337,6 +338,7 @@ fun ListFiles(
                                     onPathChange(file)
                                 } else {
                                     onFileSelect(file)
+                                    onLaunch(file)
                                     // Launch game only if a favorite folder is set and file is underneath it
                                     favoritePath?.let { fav ->
                                         if (file.absolutePath.startsWith(fav)) {
@@ -356,6 +358,7 @@ fun ListFiles(
                                 onPathChange(file)
                             } else {
                                 onFileSelect(file)
+                                onLaunch(file)
                             }
                         }
                     }
