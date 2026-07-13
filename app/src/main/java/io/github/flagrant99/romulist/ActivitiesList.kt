@@ -118,12 +118,18 @@ fun ActivitiesList(
         } ?: "Unknown"
     }
 
-    val targetSdk = remember(packageInfo) {
-        packageInfo?.applicationInfo?.targetSdkVersion?.toString() ?: "Unknown"
+    val minSdk = remember(packageInfo) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            packageInfo?.applicationInfo?.minSdkVersion?.toString() ?: "Unknown"
+        } else {
+            "Unknown"
+        }
     }
 
-    val targetAndroidVersion = remember(packageInfo) {
-        val sdk = packageInfo?.applicationInfo?.targetSdkVersion ?: 0
+    val minAndroidVersion = remember(packageInfo) {
+        val sdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            packageInfo?.applicationInfo?.minSdkVersion ?: 0
+        } else 0
         when (sdk) {
             36 -> "16"
             35 -> "15"
@@ -138,6 +144,10 @@ fun ActivitiesList(
             26 -> "8.0"
             25 -> "7.1"
             24 -> "7.0"
+            23 -> "6.0"
+            22 -> "5.1"
+            21 -> "5.0"
+            19 -> "4.4"
             else -> if (sdk > 0) "API $sdk" else "Unknown"
         }
     }
@@ -177,12 +187,12 @@ fun ActivitiesList(
                     color = Color.Green.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = "Target SDK: $targetSdk",
+                    text = "Min SDK: $minSdk",
                     style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = "Target Android: $targetAndroidVersion",
+                    text = "Min Android: $minAndroidVersion",
                     style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green.copy(alpha = 0.7f)
                 )
