@@ -200,7 +200,9 @@ fun RomulistApp()
                     isHomeLongPressActive = false
                 }
                 AppDestinations.DETAIL -> {
-                    if (selectedFile != null) {
+                    if (currentScreen == AppDestinations.PACKAGE_LIST && selectedPackageName != null) {
+                        currentScreen = AppDestinations.ACTIVITY_LIST
+                    } else if (selectedFile != null) {
                         currentScreen = AppDestinations.DETAIL
                     }
                 }
@@ -323,8 +325,10 @@ fun RomulistApp()
                                 }
 
                                 detailKey -> {
-                                    if (selectedFile != null) {
-                                        currentScreen = AppDestinations.DETAIL
+                                    if (keyEvent.type == KeyEventType.KeyUp) {
+                                        if (currentScreen != AppDestinations.PACKAGE_LIST && currentScreen != AppDestinations.ACTIVITY_LIST && selectedFile != null) {
+                                            currentScreen = AppDestinations.DETAIL
+                                        }
                                     }
                                     true
                                 }
@@ -527,6 +531,9 @@ fun RomulistApp()
                         onPackageSelect = {
                             selectedPackageName = it
                             currentScreen = AppDestinations.ACTIVITY_LIST
+                        },
+                        onPackageFocus = {
+                            selectedPackageName = it
                         },
                         onBack = handleBack,
                         swapAB = swapAB

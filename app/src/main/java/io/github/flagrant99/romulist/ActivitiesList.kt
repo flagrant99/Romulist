@@ -1,13 +1,15 @@
 package io.github.flagrant99.romulist
 
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,17 +43,62 @@ fun ActivitiesList(
     val context = LocalContext.current
     val packageInfo = remember(packageName) {
         try {
-            context.packageManager.getPackageInfo(
-                packageName,
-                PackageManager.GET_ACTIVITIES
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.PackageInfoFlags.of(PackageManager.GET_ACTIVITIES.toLong())
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.GET_ACTIVITIES
+                )
+            }
         } catch (_: Exception) {
             null
         }
     }
 
-    val activityNames = remember(packageInfo) {
-        packageInfo?.activities?.map { it.name }?.sorted() ?: emptyList()
+    val discoveryMode = remember(packageInfo, packageName) {
+        val activities = packageInfo?.activities
+        if (activities != null && activities.isNotEmpty()) "Inventory" else "Intent Discovery"
+    }
+
+    val activityNames = remember(packageInfo, packageName) {
+        val names = mutableSetOf<String>()
+
+        // Strategy 1: Full Inventory (via PackageInfo)
+        val activities = packageInfo?.activities
+        if (activities != null) {
+            for (activity in activities) {
+                names.add(activity.name)
+            }
+        }
+
+        // Strategy 2: Intent Discovery (Fallback for Android 13/14 redaction)
+        if (names.isEmpty()) {
+            try {
+                val intent = Intent(Intent.ACTION_MAIN).apply {
+                    setPackage(packageName)
+                }
+
+                val resolved = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.packageManager.queryIntentActivities(
+                        intent,
+                        PackageManager.ResolveInfoFlags.of(0L)
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.packageManager.queryIntentActivities(intent, 0)
+                }
+
+                resolved.forEach { names.add(it.activityInfo.name) }
+            } catch (_: Exception) {
+            }
+        }
+
+        names.toList().sorted()
     }
 
     val appName = remember(packageInfo) {
@@ -64,7 +111,11 @@ fun ActivitiesList(
     }
 
     val appVersion = remember(packageInfo) {
-        packageInfo?.let { "${it.versionName} (${it.longVersionCode})" } ?: "Unknown"
+        packageInfo?.let { 
+            val version = it.versionName ?: "Unknown"
+            val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) it.longVersionCode else it.versionCode.toLong()
+            "$version ($code)"
+        } ?: "Unknown"
     }
 
     val targetSdk = remember(packageInfo) {
@@ -136,6 +187,11 @@ fun ActivitiesList(
                     color = Color.Green.copy(alpha = 0.7f)
                 )
                 Text(
+                    text = "Discovery Mode: $discoveryMode",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = if (discoveryMode == "Inventory") Color.Green.copy(alpha = 0.7f) else Color.Yellow.copy(alpha = 0.7f)
+                )
+                Text(
                     text = "Total: ${activityNames.size}",
                     style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Green.copy(alpha = 0.7f)
@@ -157,14 +213,14 @@ fun ActivitiesList(
                 )
             }
         } else {
-            items(activityNames) { activityName ->
+            itemsIndexed(activityNames) { index, activityName ->
                 var isFocused by remember { mutableStateOf(false) }
                 val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (activityName == activityNames.firstOrNull()) Modifier.focusRequester(firstItemFocusRequester) else Modifier)
+                        .then(if (index == 0) Modifier.focusRequester(firstItemFocusRequester) else Modifier)
                         .onFocusChanged { isFocused = it.isFocused }
                         .focusable()
                         .onKeyEvent { keyEvent ->

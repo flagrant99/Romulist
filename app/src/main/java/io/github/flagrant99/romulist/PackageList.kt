@@ -43,7 +43,8 @@ fun PackageList(
     onPackageSelect: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    swapAB: Boolean = false
+    swapAB: Boolean = false,
+    onPackageFocus: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     var showSystemPackages by remember { mutableStateOf(false) }
@@ -156,9 +157,19 @@ fun PackageList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
-                    .onFocusChanged { isFocused = it.isFocused }
+                    .onFocusChanged { 
+                        isFocused = it.isFocused 
+                        if (it.isFocused) onPackageFocus(packageName)
+                    }
                     .focusable()
                     .onKeyEvent { keyEvent ->
+                        if (keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_Y) {
+                            if (keyEvent.type == KeyEventType.KeyDown) {
+                                onPackageSelect(packageName)
+                            }
+                            return@onKeyEvent true
+                        }
+
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
                                 launchKey -> {
