@@ -358,7 +358,7 @@ fun ListFiles(
                                 onPathChange(file)
                             } else {
                                 onFileSelect(file)
-                                onLaunch(file)
+                                // onLaunch(file) // Removed to prevent auto-launch on select/click
                             }
                         }
                     }

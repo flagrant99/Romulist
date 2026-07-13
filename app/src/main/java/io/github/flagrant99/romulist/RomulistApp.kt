@@ -125,7 +125,7 @@ fun RomulistApp()
 
         val chromeExtensions = listOf("txt", "png", "jpg", "xml", "html", "pdf")
 
-        val shouldOpenWithChrome = { file: File ->
+        val shouldOpenInternally = { file: File ->
             val ext = file.extension.lowercase()
             val isFavorite = favoriteFolder?.let { file.absolutePath.startsWith(it) } ?: false
             !isFavorite && chromeExtensions.contains(ext)
@@ -201,11 +201,7 @@ fun RomulistApp()
                 }
                 AppDestinations.DETAIL -> {
                     if (selectedFile != null) {
-                        if (shouldOpenWithChrome(selectedFile!!)) {
-                            openWithChrome(context, selectedFile!!)
-                        } else {
-                            currentScreen = AppDestinations.DETAIL
-                        }
+                        currentScreen = AppDestinations.DETAIL
                     }
                 }
                 else -> currentScreen = destination
@@ -328,11 +324,7 @@ fun RomulistApp()
 
                                 detailKey -> {
                                     if (selectedFile != null) {
-                                        if (shouldOpenWithChrome(selectedFile!!)) {
-                                            openWithChrome(context, selectedFile!!)
-                                        } else {
-                                            currentScreen = AppDestinations.DETAIL
-                                        }
+                                        currentScreen = AppDestinations.DETAIL
                                     }
                                     true
                                 }
@@ -455,8 +447,8 @@ fun RomulistApp()
                                     selectedFile = file
                                 },
                                 onLaunch = { file ->
-                                    if (shouldOpenWithChrome(file)) {
-                                        openWithChrome(context, file)
+                                    if (shouldOpenInternally(file)) {
+                                        currentScreen = AppDestinations.DETAIL
                                     }
                                 },
                                 onBack = handleBack
@@ -479,7 +471,12 @@ fun RomulistApp()
                     AppDestinations.DETAIL -> {
                         val file = selectedFile
                         if (file != null) {
-                            if (file.isDirectory) {
+                            if (shouldOpenInternally(file)) {
+                                FileViewer(
+                                    file = file,
+                                    onBack = handleBack
+                                )
+                            } else if (file.isDirectory) {
                                 FolderDetail(
                                     folder = file,
                                     triggerPrint = triggerDetailPrint,
