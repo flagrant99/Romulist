@@ -123,7 +123,7 @@ fun RomulistApp()
 
         val listState = rememberLazyListState()
 
-        val chromeExtensions = listOf("txt", "png", "jpg", "xml", "html", "pdf")
+        val chromeExtensions = listOf("txt", "png", "jpg", "xml", "html", "pdf", "cfg", "log")
 
         val shouldOpenInternally = { file: File ->
             val ext = file.extension.lowercase()

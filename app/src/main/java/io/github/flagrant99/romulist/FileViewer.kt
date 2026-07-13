@@ -61,7 +61,7 @@ fun FileViewer(
                 "pdf" -> {
                     PdfViewer(file)
                 }
-                "xml", "html", "txt" -> {
+                "xml", "html", "txt", "cfg", "log" -> {
                     HtmlViewer(file)
                 }
                 "png", "jpg", "jpeg" -> {
@@ -110,6 +110,7 @@ fun HtmlViewer(file: File) {
             val mimeType = when (file.extension.lowercase()) {
                 "xml" -> "text/xml"
                 "html" -> "text/html"
+                "cfg", "log" -> "text/plain"
                 else -> "text/plain"
             }
             
