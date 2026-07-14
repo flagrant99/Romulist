@@ -1,0 +1,10 @@
+<romulist>
+    <app name="Streets Of Rage Remake">
+		  <intent name="bennugd" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
+		    <action name="android.intent.action.MAIN" />
+		    <extra name="ROM" value="$FOLDER_PATH/sorr/SorR.dat" />
+		    <extra name="LIBRETRO" value="$DATA_DIR/cores/bennugd_libretro.so" />
+		    <extra name="CONFIGFILE" value="$EXTERNAL_FILES_DIR/retroarch.cfg" />
+		  </intent>
+    </app>
+</romulist>

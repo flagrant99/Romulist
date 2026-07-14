@@ -1,0 +1,13 @@
+<romulist>
+	<folder name="Ports" extensions="rax" use_gamelistxml_names="N">
+		 <media>
+			<cover type="relative" useSubfolder="false">m/cover</cover>
+			<marquee type="relative" useSubfolder="false">m/marquee</marquee>
+			<screen type="relative" useSubfolder="false">m/screen</screen>
+		 </media>
+	<exclusions>
+		<folder name="m" />
+		<folder name="sorr" />
+	</exclusions>
+	</folder>
+</romulist>
