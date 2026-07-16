@@ -1,0 +1,8 @@
+<romulist>
+    <app name="ES-DE">
+        <intent name="ES-DE" packageName="org.es_de.frontend" className="org.es_de.frontend.MainActivity">
+            <action name="android.intent.action.MAIN" />
+            <category name="android.intent.category.LAUNCHER" />
+        </intent>
+    </app>
+</romulist>

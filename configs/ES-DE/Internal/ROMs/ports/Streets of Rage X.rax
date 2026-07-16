@@ -1,0 +1,7 @@
+<romulist>
+    <app name="Streets of Rage X">
+		  <intent name="sorx" packageName="org.sorx.engine" className="org.openbor.engine.GameActivity">
+		    <action name="android.intent.action.MAIN" />
+		  </intent>
+    </app>
+</romulist>
