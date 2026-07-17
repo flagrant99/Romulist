@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.core.content.FileProvider
 import android.util.Xml
 import android.widget.Toast
 import org.xmlpull.v1.XmlPullParser
@@ -90,6 +91,7 @@ object EmulatorNavigator {
         val action: String,
         val categories: List<String> = emptyList(),
         val data: String?,
+        val dataType: String? = null,
         val extras: Map<String, String>
     )
 
@@ -155,7 +157,7 @@ object EmulatorNavigator {
 
                                 android.util.Log.d("Romulist", "Found intent start: nameAttr='$nameAttr', effective='$effectiveName', pkg='$pkg'")
                                 
-                                currentIntent = IntentConfig(effectiveName, pkg, pkg32, cls, "", emptyList(), dataAttr, emptyMap())
+                                currentIntent = IntentConfig(effectiveName, pkg, pkg32, cls, "", emptyList(), dataAttr, null, emptyMap())
                                 currentExtras.clear()
                                 currentCategories.clear()
                             }
@@ -163,6 +165,15 @@ object EmulatorNavigator {
                                 val actionName = parser.getAttributeValue(null, "name") ?: ""
                                 android.util.Log.d("Romulist", "  action: $actionName")
                                 currentIntent = currentIntent?.copy(action = actionName)
+                            }
+                            "data" -> {
+                                val dataValue = parser.getAttributeValue(null, "value")
+                                val dataType = parser.getAttributeValue(null, "type")
+                                android.util.Log.d("Romulist", "  data: value=$dataValue, type=$dataType")
+                                currentIntent = currentIntent?.copy(
+                                    data = dataValue ?: currentIntent?.data,
+                                    dataType = dataType ?: currentIntent?.dataType
+                                )
                             }
                             "category" -> {
                                 val categoryName = parser.getAttributeValue(null, "name")
@@ -276,7 +287,7 @@ object EmulatorNavigator {
         }
 
         val intent = Intent().apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_GRANT_READ_URI_PERMISSION)
             
             if (!currentIntentCfg.className.isNullOrBlank()) {
                 setClassName(packageName, currentIntentCfg.className)
@@ -293,16 +304,32 @@ object EmulatorNavigator {
             val externalFilesDir = "/storage/emulated/0/Android/data/$packageName/files"
             val folderPath = File(filePath).parent ?: ""
 
+            val contentUri = try {
+                FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(filePath)).toString()
+            } catch (e: Exception) {
+                ""
+            }
+
+            fun resolve(value: String): String {
+                return value.replace("\$DATA_DIR", dataDir)
+                    .replace("\$FILE_PATH", filePath)
+                    .replace("\$CONTENT_URI", contentUri)
+                    .replace("\$FOLDER_PATH", folderPath)
+                    .replace("\$EXTERNAL_FILES_DIR", externalFilesDir)
+            }
+
             currentIntentCfg.data?.let {
-                data = Uri.parse(it)
+                val resolvedData = resolve(it)
+                val resolvedType = currentIntentCfg.dataType?.let { t -> resolve(t) }
+                if (resolvedType != null) {
+                    setDataAndType(Uri.parse(resolvedData), resolvedType)
+                } else {
+                    data = Uri.parse(resolvedData)
+                }
             }
 
             currentIntentCfg.extras.forEach { (k, v) ->
-                val resolvedValue = v.replace("\$DATA_DIR", dataDir)
-                    .replace("\$FILE_PATH", filePath)
-                    .replace("\$FOLDER_PATH", folderPath)
-                    .replace("\$EXTERNAL_FILES_DIR", externalFilesDir)
-                putExtra(k, resolvedValue)
+                putExtra(k, resolve(v))
             }
         }
 

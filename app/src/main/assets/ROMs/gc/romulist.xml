@@ -2,7 +2,7 @@
 	<folder name="GameCube" extensions="rvz" use_gamelistxml_names="Y">
 		  <intent name="Dolphin Standalone" packageName="org.dolphinemu.dolphinemu" className="org.dolphinemu.dolphinemu.ui.main.MainActivity">
 		    <action name="android.intent.action.VIEW" />
-		    <extra name="AutoStartFile" value="$FILE_PATH" />
+		    <data value="$CONTENT_URI" />
 		  </intent>
 		  <alt_intents>
          	    <intent name="Dolphin Core" packageName="com.retroarch.aarch64" packageName32="com.retroarch.ra32" className="com.retroarch.browser.retroactivity.RetroActivityFuture">
