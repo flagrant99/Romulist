@@ -18,7 +18,7 @@
 			<cover type="relative" useSubfolder="true">../../ES-DE/downloaded_media/$PARENT_FOLDER_NAME/covers</cover>
 			<marquee type="relative" useSubfolder="true">../../ES-DE/downloaded_media/$PARENT_FOLDER_NAME/marquees</marquee>
 			<mixart type="relative" useSubfolder="true">../../ES-DE/downloaded_media/$PARENT_FOLDER_NAME/miximages</mixart>
-			<screen type="relative" useSubfolder="true">../../0/ES-DE/downloaded_media/$PARENT_FOLDER_NAME/screenshots</screen>
+			<screen type="relative" useSubfolder="true">../../ES-DE/downloaded_media/$PARENT_FOLDER_NAME/screenshots</screen>
 			<video type="relative" useSubfolder="true">../../ES-DE/downloaded_media/$PARENT_FOLDER_NAME/videos</video>
 		 </media>
 	</folder>
