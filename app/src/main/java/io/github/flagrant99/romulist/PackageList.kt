@@ -30,7 +30,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -102,7 +102,7 @@ fun PackageList(
                         .focusRequester(toggleFocusRequester)
                         .onFocusChanged { isToggleFocused = it.isFocused }
                         .focusable()
-                        .onKeyEvent { keyEvent ->
+                        .onPreviewKeyEvent { keyEvent ->
                             if (keyEvent.type == KeyEventType.KeyUp) {
                                 when (keyEvent.nativeKeyEvent.keyCode) {
                                     launchKey -> {
@@ -162,12 +162,12 @@ fun PackageList(
                         if (it.isFocused) onPackageFocus(packageName)
                     }
                     .focusable()
-                    .onKeyEvent { keyEvent ->
+                    .onPreviewKeyEvent { keyEvent ->
                         if (keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_BUTTON_Y) {
                             if (keyEvent.type == KeyEventType.KeyDown) {
                                 onPackageSelect(packageName)
                             }
-                            return@onKeyEvent true
+                            return@onPreviewKeyEvent true
                         }
 
                         if (keyEvent.type == KeyEventType.KeyUp) {

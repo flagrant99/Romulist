@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,7 +27,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import android.view.KeyEvent
@@ -46,12 +47,19 @@ fun FileRow(
     isAtHome: Boolean = false,
     swapAB: Boolean = false,
     useLargeFont: Boolean = false,
+    shouldAutoCaptureFocus: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     onFocus: () -> Unit = {},
     onLongClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(shouldAutoCaptureFocus) {
+        if (shouldAutoCaptureFocus) {
+            focusRequester.requestFocus()
+        }
+    }
 
     val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
     val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
@@ -65,23 +73,24 @@ fun FileRow(
                 if (it.isFocused) onFocus()
             }
             .focusable()
-            .onKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyUp) {
-                    when (keyEvent.nativeKeyEvent.keyCode) {
-                        launchKey -> {
-                            onLongClick()
-                            true
+            .onPreviewKeyEvent { keyEvent ->
+                val keyCode = keyEvent.nativeKeyEvent.keyCode
+                if (keyCode == launchKey || keyCode == backKey || keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
+                    if (keyEvent.type == KeyEventType.KeyUp) {
+                        when (keyCode) {
+                            launchKey -> {
+                                onLongClick()
+                            }
+                            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                                onClick()
+                            }
+                            backKey -> {
+                                onBack()
+                            }
                         }
-                        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
-                            onClick()
-                            true
-                        }
-                        backKey -> {
-                            onBack()
-                            true
-                        }
-                        else -> false
                     }
+                    // Consume both Down and Up to prevent combinedClickable from seeing the event
+                    true
                 } else false
             }
             .background(

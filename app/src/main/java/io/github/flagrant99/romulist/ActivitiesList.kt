@@ -26,7 +26,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -233,7 +233,7 @@ fun ActivitiesList(
                         .then(if (index == 0) Modifier.focusRequester(firstItemFocusRequester) else Modifier)
                         .onFocusChanged { isFocused = it.isFocused }
                         .focusable()
-                        .onKeyEvent { keyEvent ->
+                        .onPreviewKeyEvent { keyEvent ->
                             if (keyEvent.type == KeyEventType.KeyUp) {
                                 when (keyEvent.nativeKeyEvent.keyCode) {
                                     backKey -> {

@@ -32,7 +32,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -217,7 +217,7 @@ fun RootScreen(
                         }
                     }
                     .focusable()
-                    .onKeyEvent { keyEvent ->
+                    .onPreviewKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
                                 launchKey,
@@ -281,7 +281,7 @@ fun RootScreen(
                         }
                     }
                     .focusable()
-                    .onKeyEvent { keyEvent ->
+                    .onPreviewKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
                                 launchKey,
@@ -340,7 +340,7 @@ fun RootScreen(
                         }
                     }
                     .focusable()
-                    .onKeyEvent { keyEvent ->
+                    .onPreviewKeyEvent { keyEvent ->
                         if (keyEvent.type == KeyEventType.KeyUp) {
                             when (keyEvent.nativeKeyEvent.keyCode) {
                                 launchKey,

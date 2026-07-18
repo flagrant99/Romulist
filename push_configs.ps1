@@ -86,7 +86,8 @@ if ($DevicePath -eq "") {
 }
 
 # Base source directory
-$SourceBase = Join-Path $PSScriptRoot "configs/ES-DE/Internal/ROMs"
+#$SourceBase = Join-Path $PSScriptRoot "configs/ES-DE/Internal/ROMs"
+$SourceBase = Join-Path $PSScriptRoot "app/src/main/assets/ROMs"
 
 if (-not (Test-Path $SourceBase)) {
     Write-Error "Source path $SourceBase not found."

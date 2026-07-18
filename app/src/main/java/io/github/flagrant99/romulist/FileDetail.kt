@@ -35,7 +35,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -259,7 +259,7 @@ private fun InfoSection(
                 .focusRequester(if (index == 0) firstIntentFocusRequester else remember { FocusRequester() })
                 .onFocusChanged { isFocused = it.isFocused }
                 .focusable()
-                .onKeyEvent { keyEvent ->
+                .onPreviewKeyEvent { keyEvent ->
                     if (keyEvent.type == KeyEventType.KeyUp) {
                         when (keyEvent.nativeKeyEvent.keyCode) {
                             launchKey,

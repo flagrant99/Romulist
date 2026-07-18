@@ -206,15 +206,16 @@ fun ListFiles(
         romulistConfig?.nameExclusions ?: emptyList()
     }
 
-    var files by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf<List<File>>(emptyList()) }
-    var isScanning by remember(currentPath, allowedExtensions, nameExclusions) { mutableStateOf(true) }
+    var files by remember { mutableStateOf<List<File>>(emptyList()) }
+    var isScanning by remember { mutableStateOf(true) }
+
+    var focusGeneration by remember(currentPath) { mutableStateOf(0) }
+    LaunchedEffect(currentPath) {
+        focusGeneration++
+    }
 
     val firstItemFocusRequester = remember { FocusRequester() }
     val selectedItemFocusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(currentPath) {
-        // No-op here, handled by lastPath check above
-    }
 
     LaunchedEffect(currentPath, allowedExtensions, nameExclusions, fileNamesMap) {
         isScanning = true
@@ -244,17 +245,20 @@ fun ListFiles(
             val index = files.indexOfFirst { it.absolutePath == selectedFile?.absolutePath }
             if (index != -1) {
                 listState.scrollToItem(index)
-                // We need to wait for the item to be composed to request focus if it's not the first item
-                // or use a different mechanism. For now, let's try to focus it if it's visible.
-                selectedItemFocusRequester.requestFocus()
             } else {
-                firstItemFocusRequester.requestFocus()
+                listState.scrollToItem(0)
             }
         }
     }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val effectiveSelectedFile = remember(selectedFile, files, isScanning, focusGeneration) {
+        if (selectedFile != null) selectedFile
+        else if (!isScanning && files.isNotEmpty() && focusGeneration > 0) files[0]
+        else null
+    }
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = if (isLandscape) Modifier.weight(1f) else Modifier.fillMaxSize()) {
@@ -285,7 +289,7 @@ fun ListFiles(
                 }
             }
 
-            if (isScanning) {
+            if (isScanning && files.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -294,7 +298,7 @@ fun ListFiles(
                 ) {
                     CircularProgressIndicator(color = Color.Green)
                 }
-            } else if (files.isEmpty()) {
+            } else if (!isScanning && files.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -309,57 +313,76 @@ fun ListFiles(
                 }
             } else {
                 val showIcons = files.any { it.isDirectory }
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    state = listState
-                ) {
-                    itemsIndexed(files) { index, file ->
-                        val isItemSelected = file.absolutePath == selectedFile?.absolutePath
-                        val displayName = if (file.isDirectory) file.name else fileNamesMap[file.name] ?: file.name
-                        FileRow(
-                            name = displayName,
-                            isDirectory = file.isDirectory,
-                            onBack = onBack,
-                            isSelected = isItemSelected,
-                            showIcon = showIcons,
-                            isAtHome = isAtHome,
-                            swapAB = swapAB,
-                            useLargeFont = useLargeFont,
-                            focusRequester = when {
-                                isItemSelected -> selectedItemFocusRequester
-                                index == 0 -> firstItemFocusRequester
-                                else -> remember { FocusRequester() }
-                            },
-                            onFocus = {
-                                onFileSelect(file)
-                            },
-                            onLongClick = {
+                Box(modifier = Modifier.weight(1f)) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        state = listState
+                    ) {
+                        itemsIndexed(files) { index, file ->
+                            val isItemSelected = file.absolutePath == selectedFile?.absolutePath
+                            val displayName = if (file.isDirectory) file.name else fileNamesMap[file.name] ?: file.name
+                            
+                            val shouldAutoCaptureFocus = !isScanning && focusGeneration > 0 && (
+                                (selectedFile == null && index == 0) || isItemSelected
+                            )
+
+                            FileRow(
+                                name = displayName,
+                                isDirectory = file.isDirectory,
+                                onBack = onBack,
+                                isSelected = isItemSelected,
+                                showIcon = showIcons,
+                                isAtHome = isAtHome,
+                                swapAB = swapAB,
+                                useLargeFont = useLargeFont,
+                                shouldAutoCaptureFocus = shouldAutoCaptureFocus,
+                                focusRequester = when {
+                                    isItemSelected -> selectedItemFocusRequester
+                                    index == 0 -> firstItemFocusRequester
+                                    else -> remember { FocusRequester() }
+                                },
+                                onFocus = {
+                                    onFileSelect(file)
+                                },
+                                onLongClick = {
+                                    if (file.isDirectory) {
+                                        onPathChange(file)
+                                    } else {
+                                        onFileSelect(file)
+                                        onLaunch(file)
+                                        // Launch game only if a favorite folder is set and file is underneath it
+                                        favoritePath?.let { fav ->
+                                            if (file.absolutePath.startsWith(fav)) {
+                                                isLaunchingGame = true
+                                                EmulatorNavigator.launchGame(
+                                                    context = context,
+                                                    filePath = file.absolutePath,
+                                                    config = romulistConfig,
+                                                    preferredIntent = preferredIntent
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            ) {
                                 if (file.isDirectory) {
                                     onPathChange(file)
                                 } else {
                                     onFileSelect(file)
-                                    onLaunch(file)
-                                    // Launch game only if a favorite folder is set and file is underneath it
-                                    favoritePath?.let { fav ->
-                                        if (file.absolutePath.startsWith(fav)) {
-                                            isLaunchingGame = true
-                                            EmulatorNavigator.launchGame(
-                                                context = context,
-                                                filePath = file.absolutePath,
-                                                config = romulistConfig,
-                                                preferredIntent = preferredIntent
-                                            )
-                                        }
-                                    }
+                                    // onLaunch(file) // Removed to prevent auto-launch on select/click
                                 }
                             }
+                        }
+                    }
+
+                    if (isScanning) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            if (file.isDirectory) {
-                                onPathChange(file)
-                            } else {
-                                onFileSelect(file)
-                                // onLaunch(file) // Removed to prevent auto-launch on select/click
-                            }
+                            CircularProgressIndicator(color = Color.Green)
                         }
                     }
                 }
@@ -379,7 +402,7 @@ fun ListFiles(
                 ListMediaSection(
                     system = romulistConfig.systemConfig,
                     configSource = configResult.second,
-                    selectedFile = selectedFile,
+                    selectedFile = effectiveSelectedFile,
                     isActive = isMediaActive
                 )
             }
