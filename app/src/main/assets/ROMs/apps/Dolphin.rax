@@ -1,0 +1,8 @@
+<romulist>
+    <app name="Dolphin">
+        <intent name="Dolphin" packageName="org.dolphinemu.dolphinemu" className="org.dolphinemu.dolphinemu.ui.main.MainActivity">
+            <action name="android.intent.action.MAIN" />
+            <category name="android.intent.category.LAUNCHER" />
+        </intent>
+    </app>
+</romulist>
