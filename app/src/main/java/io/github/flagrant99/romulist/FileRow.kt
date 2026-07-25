@@ -143,8 +143,18 @@ fun FileRow(
                     contentDescription = null,
                     tint = iconTint
                         )
-                    "psx" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_stadia_controller_24),
+                    "3do", "pcengine", "pcenginecd", "mastersystem", "megadrive", "saturn", "sega32x", "segacd" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_videogame_asset_24 ),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
+                    "apps" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_apps_24),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
+                    "ports" -> Icon(
+                        painter = painterResource(id = R.drawable.outline_directions_boat_24),
                         contentDescription = null,
                         tint = iconTint
                     )
@@ -152,7 +162,7 @@ fun FileRow(
                     else ->
                     {
                         Icon(
-                            painter = painterResource(id = R.drawable.outline_videogame_asset_24),
+                            painter = painterResource(id = R.drawable.outline_stadia_controller_24),
                             contentDescription = null,
                             tint = iconTint
                         )
