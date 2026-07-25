@@ -260,6 +260,12 @@ fun ListFiles(
         else null
     }
 
+    LaunchedEffect(effectiveSelectedFile) {
+        if (effectiveSelectedFile != null && selectedFile == null) {
+            onFileSelect(effectiveSelectedFile)
+        }
+    }
+
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = if (isLandscape) Modifier.weight(1f) else Modifier.fillMaxSize()) {
             Text(
