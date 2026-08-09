@@ -53,15 +53,15 @@ fun DTS(
         focusRequester.requestFocus()
     }
 
-    fun disableDts() {
+    fun setDtsState(state: Int) {
         if (Settings.System.canWrite(context)) {
             try {
-                val success = Settings.System.putInt(context.contentResolver, "dts_state", 0)
+                val success = Settings.System.putInt(context.contentResolver, "dts_state", state)
                 if (success) {
-                    Toast.makeText(context, "DTS Disabled", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "DTS ${if (state == 1) "Enabled" else "Disabled"}", Toast.LENGTH_SHORT).show()
                     refreshDtsState()
                 } else {
-                    Toast.makeText(context, "Failed to disable DTS", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to change DTS state", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -114,7 +114,7 @@ fun DTS(
                                 launchKey,
                                 KeyEvent.KEYCODE_DPAD_CENTER,
                                 KeyEvent.KEYCODE_ENTER -> {
-                                    disableDts()
+                                    setDtsState(0)
                                     true
                                 }
                                 backKey -> {
@@ -126,7 +126,7 @@ fun DTS(
                         } else false
                     }
                     .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
-                    .clickable { disableDts() }
+                    .clickable { setDtsState(0) }
                     .padding(16.dp)
             ) {
                 Text(
@@ -143,6 +143,60 @@ fun DTS(
                 )
                 Text(
                     text = "Set dts_state to 0",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                    ),
+                    color = Color.Green
+                )
+            }
+        }
+
+        item {
+            var isFocused by remember { mutableStateOf(false) }
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused = it.isFocused }
+                    .focusable()
+                    .onPreviewKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                launchKey,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
+                                KeyEvent.KEYCODE_ENTER -> {
+                                    setDtsState(1)
+                                    true
+                                }
+                                backKey -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
+                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .clickable { setDtsState(1) }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "ENABLE DTS",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(
+                            color = Color.Green.copy(alpha = 0.5f),
+                            offset = Offset(0f, 0f),
+                            blurRadius = 12f
+                        )
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Set dts_state to 1",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
