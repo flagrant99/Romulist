@@ -120,40 +120,13 @@ fun AndroidSystem(
             val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
             val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
-            fun launchUsbSettings() {
-                val actions = listOf(
-                    "android.settings.USB_DETAILS_SETTINGS",
-                    "android.settings.USB_SETTINGS",
-                    "android.settings.DEVICE_CONNECTION_SETTINGS"
-                )
-                
-                var success = false
-                for (action in actions) {
-                    try {
-                        val intent = Intent(action)
-                        context.startActivity(intent)
-                        success = true
-                        break
-                    } catch (_: Exception) { }
-                }
-
-                if (!success) {
-                    try {
-                        // Try explicit component for stock Android
-                        val intent = Intent()
-                        intent.setClassName("com.android.settings", "com.android.settings.Settings\$UsbDetailsFragmentActivity")
-                        context.startActivity(intent)
-                        success = true
-                    } catch (_: Exception) {
-                        try {
-                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                            context.startActivity(intent)
-                            success = true
-                        } catch (_: Exception) {
-                            val intent = Intent(Settings.ACTION_SETTINGS)
-                            context.startActivity(intent)
-                        }
-                    }
+            fun launchConnectedDevices() {
+                try {
+                    val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    val intent = Intent(Settings.ACTION_SETTINGS)
+                    context.startActivity(intent)
                 }
             }
 
@@ -168,7 +141,7 @@ fun AndroidSystem(
                                 launchKey,
                                 KeyEvent.KEYCODE_DPAD_CENTER,
                                 KeyEvent.KEYCODE_ENTER -> {
-                                    launchUsbSettings()
+                                    launchConnectedDevices()
                                     true
                                 }
                                 backKey -> {
@@ -180,11 +153,11 @@ fun AndroidSystem(
                         } else false
                     }
                     .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
-                    .clickable { launchUsbSettings() }
+                    .clickable { launchConnectedDevices() }
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "USB SETTINGS",
+                    text = "CONNECTED DEVICES",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(
@@ -196,7 +169,71 @@ fun AndroidSystem(
                     color = Color.Green
                 )
                 Text(
-                    text = "Shortcut to USB File Transfer preferences. (Ensure USB is connected)",
+                    text = "Shortcut to Connected Devices (then tap USB for File Transfer)",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                    ),
+                    color = Color.Green
+                )
+            }
+        }
+
+        item {
+            var isFocused by remember { mutableStateOf(false) }
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
+            fun launchDevSettings() {
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    val intent = Intent(Settings.ACTION_SETTINGS)
+                    context.startActivity(intent)
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused = it.isFocused }
+                    .focusable()
+                    .onPreviewKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                launchKey,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
+                                KeyEvent.KEYCODE_ENTER -> {
+                                    launchDevSettings()
+                                    true
+                                }
+                                backKey -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
+                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .clickable { launchDevSettings() }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "DEVELOPER OPTIONS",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(
+                            color = Color.Green.copy(alpha = 0.5f),
+                            offset = Offset(0f, 0f),
+                            blurRadius = 12f
+                        )
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Configure 'Default USB Configuration' to File Transfer",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
