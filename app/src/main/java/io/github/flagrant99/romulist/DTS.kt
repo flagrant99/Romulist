@@ -56,15 +56,29 @@ fun DTS(
     fun setDtsState(state: Int) {
         if (Settings.System.canWrite(context)) {
             try {
-                val success = Settings.System.putInt(context.contentResolver, "dts_state", state)
+                // Try writing as a String first, which can sometimes bypass stricter 'Int' type checks
+                // for custom vendor keys on newer Android versions.
+                val success = Settings.System.putString(context.contentResolver, "dts_state", state.toString())
                 if (success) {
                     Toast.makeText(context, "DTS ${if (state == 1) "Enabled" else "Disabled"}", Toast.LENGTH_SHORT).show()
                     refreshDtsState()
                 } else {
-                    Toast.makeText(context, "Failed to change DTS state", Toast.LENGTH_SHORT).show()
+                    // Fallback to putInt
+                    val successInt = Settings.System.putInt(context.contentResolver, "dts_state", state)
+                    if (successInt) {
+                        Toast.makeText(context, "DTS ${if (state == 1) "Enabled" else "Disabled"}", Toast.LENGTH_SHORT).show()
+                        refreshDtsState()
+                    } else {
+                        Toast.makeText(context, "Failed to change DTS state", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                val errorMsg = e.message ?: ""
+                if (errorMsg.contains("secure", ignoreCase = true)) {
+                    Toast.makeText(context, "OS blocked write. Use ADB command on this device version.", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
             Toast.makeText(context, "Permission needed to write settings", Toast.LENGTH_LONG).show()
@@ -92,6 +106,30 @@ fun DTS(
                 )
                 HorizontalDivider(
                     modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
+                    color = Color.Green.copy(alpha = 0.5f)
+                )
+
+                Text(
+                    text = "OS LIMITATION:",
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Red
+                )
+                Text(
+                    text = "Android 16+ blocks apps from changing this setting directly. If the buttons below fail, run this from your PC:",
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Green.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "adb shell settings put system dts_state 0",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        background = Color.DarkGray
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = Color.Yellow
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 16.dp),
                     color = Color.Green.copy(alpha = 0.5f)
                 )
             }

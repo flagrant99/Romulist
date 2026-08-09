@@ -120,6 +120,75 @@ fun AndroidSystem(
             val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
             val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
+            fun launchUsbSettings() {
+                try {
+                    val intent = Intent("android.settings.USB_DETAILS_SETTINGS")
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        val intent = Intent("android.settings.USB_SETTINGS")
+                        context.startActivity(intent)
+                    } catch (e2: Exception) {
+                        val intent = Intent(Settings.ACTION_SETTINGS)
+                        context.startActivity(intent)
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused = it.isFocused }
+                    .focusable()
+                    .onPreviewKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                launchKey,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
+                                KeyEvent.KEYCODE_ENTER -> {
+                                    launchUsbSettings()
+                                    true
+                                }
+                                backKey -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
+                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .clickable { launchUsbSettings() }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "USB SETTINGS",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(
+                            color = Color.Green.copy(alpha = 0.5f),
+                            offset = Offset(0f, 0f),
+                            blurRadius = 12f
+                        )
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Shortcut to USB File Transfer preferences",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                    ),
+                    color = Color.Green
+                )
+            }
+        }
+
+        item {
+            var isFocused by remember { mutableStateOf(false) }
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
