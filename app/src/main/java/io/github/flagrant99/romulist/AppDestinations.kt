@@ -11,5 +11,6 @@ enum class AppDestinations(
     SET_HOME("Set Home", R.drawable.ic_home),
     PACKAGE_LIST("List Packages", R.drawable.ic_account_box),
     ACTIVITY_LIST("Activities", R.drawable.outline_settings_24),
-    ANDROID_SYSTEM("Android System", R.drawable.outline_settings_24);
+    ANDROID_SYSTEM("Android System", R.drawable.outline_settings_24),
+    DTS("DTS", R.drawable.outline_settings_24);
 }

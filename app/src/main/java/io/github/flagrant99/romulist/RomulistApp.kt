@@ -161,6 +161,9 @@ fun RomulistApp()
                 currentScreen == AppDestinations.ACTIVITY_LIST -> {
                     currentScreen = AppDestinations.PACKAGE_LIST
                 }
+                currentScreen == AppDestinations.DTS -> {
+                    currentScreen = AppDestinations.ANDROID_SYSTEM
+                }
                 // 1. If we are on a different tab, go back to Home first (keeping folder state)
                 currentScreen != AppDestinations.HOME -> {
                     currentScreen = AppDestinations.HOME
@@ -547,6 +550,12 @@ fun RomulistApp()
                     )
 
                     AppDestinations.ANDROID_SYSTEM -> AndroidSystem(
+                        onBack = handleBack,
+                        onDts = { currentScreen = AppDestinations.DTS },
+                        swapAB = swapAB
+                    )
+
+                    AppDestinations.DTS -> DTS(
                         onBack = handleBack,
                         swapAB = swapAB
                     )
