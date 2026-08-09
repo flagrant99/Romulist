@@ -121,16 +121,38 @@ fun AndroidSystem(
             val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
             fun launchUsbSettings() {
-                try {
-                    val intent = Intent("android.settings.USB_DETAILS_SETTINGS")
-                    context.startActivity(intent)
-                } catch (e: Exception) {
+                val actions = listOf(
+                    "android.settings.USB_DETAILS_SETTINGS",
+                    "android.settings.USB_SETTINGS",
+                    "android.settings.DEVICE_CONNECTION_SETTINGS"
+                )
+                
+                var success = false
+                for (action in actions) {
                     try {
-                        val intent = Intent("android.settings.USB_SETTINGS")
+                        val intent = Intent(action)
                         context.startActivity(intent)
-                    } catch (e2: Exception) {
-                        val intent = Intent(Settings.ACTION_SETTINGS)
+                        success = true
+                        break
+                    } catch (_: Exception) { }
+                }
+
+                if (!success) {
+                    try {
+                        // Try explicit component for stock Android
+                        val intent = Intent()
+                        intent.setClassName("com.android.settings", "com.android.settings.Settings\$UsbDetailsFragmentActivity")
                         context.startActivity(intent)
+                        success = true
+                    } catch (_: Exception) {
+                        try {
+                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                            context.startActivity(intent)
+                            success = true
+                        } catch (_: Exception) {
+                            val intent = Intent(Settings.ACTION_SETTINGS)
+                            context.startActivity(intent)
+                        }
                     }
                 }
             }
@@ -174,7 +196,7 @@ fun AndroidSystem(
                     color = Color.Green
                 )
                 Text(
-                    text = "Shortcut to USB File Transfer preferences",
+                    text = "Shortcut to USB File Transfer preferences. (Ensure USB is connected)",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
