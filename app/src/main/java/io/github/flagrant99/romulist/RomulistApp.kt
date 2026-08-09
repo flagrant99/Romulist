@@ -224,7 +224,7 @@ fun RomulistApp()
                     contentColor = Color.Green,
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST }
+                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.DTS }
                         .forEach { destination ->
                             val isSelected = if (destination == AppDestinations.BACK) false
                             else currentScreen == destination
@@ -343,7 +343,7 @@ fun RomulistApp()
                 bottomBar = {
                     if (!showRail) {
                         NavigationBar {
-                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST }
+                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.DTS }
                                 .forEach { destination ->
 
                                     // 1. Determine if this item is selected
