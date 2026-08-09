@@ -466,6 +466,7 @@ fun RomulistApp()
                                 onVolumeClick = { folder -> selectedFolder = folder },
                                 onVolumeFocus = { file -> selectedFile = file },
                                 onListPackages = { currentScreen = AppDestinations.PACKAGE_LIST },
+                                onAndroidSystem = { currentScreen = AppDestinations.ANDROID_SYSTEM },
                                 onBack = handleBack,
                                 onExit = { (context as? Activity)?.finish() }
                             )
@@ -541,6 +542,11 @@ fun RomulistApp()
 
                     AppDestinations.ACTIVITY_LIST -> ActivitiesList(
                         packageName = selectedPackageName ?: "",
+                        onBack = handleBack,
+                        swapAB = swapAB
+                    )
+
+                    AppDestinations.ANDROID_SYSTEM -> AndroidSystem(
                         onBack = handleBack,
                         swapAB = swapAB
                     )

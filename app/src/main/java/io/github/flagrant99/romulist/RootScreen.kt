@@ -47,6 +47,7 @@ fun RootScreen(
     onVolumeClick: (File) -> Unit,
     onVolumeFocus: (File?) -> Unit,
     onListPackages: () -> Unit,
+    onAndroidSystem: () -> Unit,
     onBack: () -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
@@ -316,6 +317,65 @@ fun RootScreen(
                 )
                 Text(
                     text = "View all installed package names",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                    ),
+                    color = Color.Green
+                )
+            }
+        }
+
+        item {
+            var isFocused by remember { mutableStateOf(false) }
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged {
+                        isFocused = it.isFocused
+                        if (it.isFocused) {
+                            onVolumeFocus(null)
+                        }
+                    }
+                    .focusable()
+                    .onPreviewKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                launchKey,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
+                                KeyEvent.KEYCODE_ENTER -> {
+                                    onAndroidSystem()
+                                    true
+                                }
+                                backKey -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
+                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .clickable { onAndroidSystem() }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "ANDROID SYSTEM",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(
+                            color = Color.Green.copy(alpha = 0.5f),
+                            offset = Offset(0f, 0f),
+                            blurRadius = 12f
+                        )
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "System actions and settings",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
