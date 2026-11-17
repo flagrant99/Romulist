@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AndroidSystem(
     onBack: () -> Unit,
-    onDts: () -> Unit,
     modifier: Modifier = Modifier,
     swapAB: Boolean = false
 ) {
@@ -243,58 +242,6 @@ fun AndroidSystem(
             }
         }
 
-        item {
-            var isFocused by remember { mutableStateOf(false) }
-            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
-            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { isFocused = it.isFocused }
-                    .focusable()
-                    .onPreviewKeyEvent { keyEvent ->
-                        if (keyEvent.type == KeyEventType.KeyUp) {
-                            when (keyEvent.nativeKeyEvent.keyCode) {
-                                launchKey,
-                                KeyEvent.KEYCODE_DPAD_CENTER,
-                                KeyEvent.KEYCODE_ENTER -> {
-                                    onDts()
-                                    true
-                                }
-                                backKey -> {
-                                    onBack()
-                                    true
-                                }
-                                else -> false
-                            }
-                        } else false
-                    }
-                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
-                    .clickable { onDts() }
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "DTS",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
-                        shadow = Shadow(
-                            color = Color.Green.copy(alpha = 0.5f),
-                            offset = Offset(0f, 0f),
-                            blurRadius = 12f
-                        )
-                    ),
-                    color = Color.Green
-                )
-                Text(
-                    text = "Control DTS audio effects",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
-                    ),
-                    color = Color.Green
-                )
-            }
-        }
     }
 }

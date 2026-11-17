@@ -161,9 +161,7 @@ fun RomulistApp()
                 currentScreen == AppDestinations.ACTIVITY_LIST -> {
                     currentScreen = AppDestinations.PACKAGE_LIST
                 }
-                currentScreen == AppDestinations.DTS -> {
-                    currentScreen = AppDestinations.ANDROID_SYSTEM
-                }
+
                 // 1. If we are on a different tab, go back to Home first (keeping folder state)
                 currentScreen != AppDestinations.HOME -> {
                     currentScreen = AppDestinations.HOME
@@ -224,7 +222,7 @@ fun RomulistApp()
                     contentColor = Color.Green,
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.DTS }
+                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM }
                         .forEach { destination ->
                             val isSelected = if (destination == AppDestinations.BACK) false
                             else currentScreen == destination
@@ -343,7 +341,7 @@ fun RomulistApp()
                 bottomBar = {
                     if (!showRail) {
                         NavigationBar {
-                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.DTS }
+                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM }
                                 .forEach { destination ->
 
                                     // 1. Determine if this item is selected
@@ -550,12 +548,6 @@ fun RomulistApp()
                     )
 
                     AppDestinations.ANDROID_SYSTEM -> AndroidSystem(
-                        onBack = handleBack,
-                        onDts = { currentScreen = AppDestinations.DTS },
-                        swapAB = swapAB
-                    )
-
-                    AppDestinations.DTS -> DTS(
                         onBack = handleBack,
                         swapAB = swapAB
                     )
