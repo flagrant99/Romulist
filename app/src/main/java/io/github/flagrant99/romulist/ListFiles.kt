@@ -63,6 +63,7 @@ fun ListFiles(
     listState: LazyListState = rememberLazyListState(),
     swapAB: Boolean = false,
     useLargeFont: Boolean = false,
+    displayPath: Boolean = true,
     onPathChange: (File) -> Unit,
     onFileSelect: (File) -> Unit,
     onLaunch: (File) -> Unit = {},
@@ -268,12 +269,14 @@ fun ListFiles(
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = if (isLandscape) Modifier.weight(1f) else Modifier.fillMaxSize()) {
-            Text(
-                text = "Path: ${currentPath.absolutePath}",
-                modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray
-            )
+            if (displayPath) {
+                Text(
+                    text = "Path: ${currentPath.absolutePath}",
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+            }
 
             if (romulistConfig?.systemConfig != null) {
                 Box(

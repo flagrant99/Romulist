@@ -115,6 +115,10 @@ fun RomulistApp()
             mutableStateOf(settings.useLargeFont)
         }
 
+        var displayPath by rememberSaveable {
+            mutableStateOf(settings.displayPath)
+        }
+
         var selectedPackageName by rememberSaveable {
             mutableStateOf<String?>(null)
         }
@@ -468,6 +472,7 @@ fun RomulistApp()
                                 listState = listState,
                                 swapAB = swapAB,
                                 useLargeFont = useLargeFont,
+                                displayPath = displayPath,
                                 onPathChange = { 
                                     selectedFolder = it 
                                     selectedFile = null
@@ -531,6 +536,7 @@ fun RomulistApp()
                         useNavRail = useNavRail,
                         swapAB = swapAB,
                         useLargeFont = useLargeFont,
+                        displayPath = displayPath,
                         onToggleNavRail = { 
                             useNavRail = it
                             settings.useNavRail = it
@@ -542,6 +548,10 @@ fun RomulistApp()
                         onToggleLargeFont = {
                             useLargeFont = it
                             settings.useLargeFont = it
+                        },
+                        onToggleDisplayPath = {
+                            displayPath = it
+                            settings.displayPath = it
                         },
                         onSetHome = { path ->
                             favoriteFolder = path

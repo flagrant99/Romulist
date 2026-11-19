@@ -32,4 +32,10 @@ class PersistentSettings(context: Context) {
         set(value) {
             sharedPrefs.edit().putBoolean("use_large_font", value).apply()
         }
+
+    var displayPath: Boolean
+        get() = sharedPrefs.getBoolean("display_path", true)
+        set(value) {
+            sharedPrefs.edit().putBoolean("display_path", value).apply()
+        }
 }

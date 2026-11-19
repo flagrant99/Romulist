@@ -28,9 +28,11 @@ fun SetHomeFolder(
     useNavRail: Boolean,
     swapAB: Boolean,
     useLargeFont: Boolean,
+    displayPath: Boolean,
     onToggleNavRail: (Boolean) -> Unit,
     onToggleSwapAB: (Boolean) -> Unit,
     onToggleLargeFont: (Boolean) -> Unit,
+    onToggleDisplayPath: (Boolean) -> Unit,
     onSetHome: (String?) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -105,6 +107,28 @@ fun SetHomeFolder(
             Switch(
                 checked = useLargeFont,
                 onCheckedChange = onToggleLargeFont,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.Green,
+                    checkedTrackColor = Color.DarkGray,
+                    uncheckedThumbColor = Color.Gray,
+                    uncheckedTrackColor = Color.Black
+                )
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Text(
+                text = "Display Path",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
+            Spacer(Modifier.weight(1f))
+            Switch(
+                checked = displayPath,
+                onCheckedChange = onToggleDisplayPath,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.Green,
                     checkedTrackColor = Color.DarkGray,
