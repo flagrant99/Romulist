@@ -119,6 +119,10 @@ fun RomulistApp()
             mutableStateOf<String?>(null)
         }
 
+        var selectedGamepadDevice by remember {
+            mutableStateOf<DeviceInfo?>(null)
+        }
+
         var triggerDetailPrint by remember { mutableStateOf(false) }
 
         val listState = rememberLazyListState()
@@ -160,6 +164,13 @@ fun RomulistApp()
             when {
                 currentScreen == AppDestinations.ACTIVITY_LIST -> {
                     currentScreen = AppDestinations.PACKAGE_LIST
+                }
+                currentScreen == AppDestinations.GAMEPAD_TESTER -> {
+                    if (selectedGamepadDevice != null) {
+                        selectedGamepadDevice = null
+                    } else {
+                        currentScreen = AppDestinations.ANDROID_SYSTEM
+                    }
                 }
 
                 // 1. If we are on a different tab, go back to Home first (keeping folder state)
@@ -222,7 +233,7 @@ fun RomulistApp()
                     contentColor = Color.Green,
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM }
+                    AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.GAMEPAD_TESTER }
                         .forEach { destination ->
                             val isSelected = if (destination == AppDestinations.BACK) false
                             else currentScreen == destination
@@ -341,7 +352,7 @@ fun RomulistApp()
                 bottomBar = {
                     if (!showRail) {
                         NavigationBar {
-                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM }
+                            AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.GAMEPAD_TESTER }
                                 .forEach { destination ->
 
                                     // 1. Determine if this item is selected
@@ -548,6 +559,14 @@ fun RomulistApp()
                     )
 
                     AppDestinations.ANDROID_SYSTEM -> AndroidSystem(
+                        onBack = handleBack,
+                        swapAB = swapAB,
+                        onGamepadTester = { currentScreen = AppDestinations.GAMEPAD_TESTER }
+                    )
+
+                    AppDestinations.GAMEPAD_TESTER -> GamepadTester(
+                        selectedDevice = selectedGamepadDevice,
+                        onDeviceSelect = { selectedGamepadDevice = it },
                         onBack = handleBack,
                         swapAB = swapAB
                     )

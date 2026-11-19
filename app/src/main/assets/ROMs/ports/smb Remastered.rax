@@ -1,0 +1,7 @@
+<romulist>
+    <app name="SMB Remastered">
+		  <intent name="smb" packageName="com.mircowuffwuff.smb1r" className="com.godot.game.GodotApp">
+		    <action name="android.intent.action.MAIN" />
+		  </intent>
+    </app>
+</romulist>
