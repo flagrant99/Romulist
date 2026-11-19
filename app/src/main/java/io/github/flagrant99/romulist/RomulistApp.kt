@@ -226,6 +226,13 @@ fun RomulistApp()
         val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val showRail = isLandscape && useNavRail
 
+        val isHomeFolderActive = remember(currentScreen, selectedFolder, favoriteFolder) {
+            currentScreen == AppDestinations.HOME &&
+                    selectedFolder != null &&
+                    favoriteFolder != null &&
+                    selectedFolder?.absolutePath == File(favoriteFolder!!).absolutePath
+        }
+
         Row(modifier = Modifier.fillMaxSize()) {
             if (showRail) {
                 NavigationRail(
@@ -235,8 +242,11 @@ fun RomulistApp()
                     Spacer(Modifier.height(16.dp))
                     AppDestinations.entries.filter { it != AppDestinations.SET_HOME && it != AppDestinations.PACKAGE_LIST && it != AppDestinations.ACTIVITY_LIST && it != AppDestinations.ANDROID_SYSTEM && it != AppDestinations.GAMEPAD_TESTER }
                         .forEach { destination ->
-                            val isSelected = if (destination == AppDestinations.BACK) false
-                            else currentScreen == destination
+                            val isSelected = when (destination) {
+                                AppDestinations.BACK -> false
+                                AppDestinations.HOME -> isHomeFolderActive
+                                else -> currentScreen == destination
+                            }
 
                             val interactionSource = remember { MutableInteractionSource() }
 
@@ -356,8 +366,11 @@ fun RomulistApp()
                                 .forEach { destination ->
 
                                     // 1. Determine if this item is selected
-                                    val isSelected = if (destination == AppDestinations.BACK) false
-                                    else currentScreen == destination
+                                    val isSelected = when (destination) {
+                                        AppDestinations.BACK -> false
+                                        AppDestinations.HOME -> isHomeFolderActive
+                                        else -> currentScreen == destination
+                                    }
 
                                     val interactionSource = remember { MutableInteractionSource() }
 
