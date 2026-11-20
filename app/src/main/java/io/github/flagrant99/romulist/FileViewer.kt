@@ -11,6 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.core.graphics.createBitmap
 import java.io.File
 
@@ -31,13 +34,13 @@ fun FileViewer(
     file: File,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
-    val extension = file.extension.lowercase()
+    var currentFile by remember { mutableStateOf(file) }
+    val extension = currentFile.extension.lowercase()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(file.name, style = MaterialTheme.typography.titleMedium) },
+                title = { Text(currentFile.name, style = MaterialTheme.typography.titleMedium) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -59,13 +62,16 @@ fun FileViewer(
         ) {
             when (extension) {
                 "pdf" -> {
-                    PdfViewer(file)
+                    PdfViewer(currentFile)
                 }
                 "xml", "html", "txt", "cfg", "log" -> {
-                    HtmlViewer(file)
+                    HtmlViewer(currentFile)
                 }
                 "png", "jpg", "jpeg" -> {
-                    ImageViewer(file)
+                    ImageViewer(
+                        file = currentFile,
+                        onFileChange = { newFile -> currentFile = newFile }
+                    )
                 }
                 else -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -202,23 +208,69 @@ fun PdfViewer(file: File) {
 }
 
 @Composable
-fun ImageViewer(file: File) {
+fun ImageViewer(
+    file: File,
+    onFileChange: (File) -> Unit
+) {
     val context = LocalContext.current
     val bitmap = remember(file) {
         android.graphics.BitmapFactory.decodeFile(file.absolutePath)
     }
 
-    if (bitmap != null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = "Image",
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    } else {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Failed to load image", color = Color.Red)
+    // Swipe detection logic
+    val swipeThreshold = 50
+    var offsetX by remember { mutableStateOf(0f) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .pointerInput(file) {
+                detectDragGestures(
+                    onDragStart = { offset -> offsetX = offset.x },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                    },
+                    onDragEnd = {
+                        if (offsetX > swipeThreshold) {
+                            // Swipe Right -> Next
+                            val files = file.parentFile?.listFiles()
+                                ?.filter { it.extension.lowercase() in listOf("png", "jpg", "jpeg") }
+                                ?.sortedBy { it.name }
+                            val currentIndex = files?.indexOf(file) ?: -1
+                            if (currentIndex != -1 && files != null && currentIndex < files.size - 1) {
+                                onFileChange(files[currentIndex + 1])
+                            }
+                        } else if (offsetX < -swipeThreshold) {
+                            // Swipe Left -> Previous
+                            val files = file.parentFile?.listFiles()
+                                ?.filter { it.extension.lowercase() in listOf("png", "jpg", "jpeg") }
+                                ?.sortedBy { it.name }
+                            val currentIndex = files?.indexOf(file) ?: -1
+                            if (currentIndex != -1 && files != null && currentIndex > 0) {
+                                onFileChange(files[currentIndex - 1])
+                            }
+                        }
+                        offsetX = 0f
+                    }
+                )
+            }
+            .padding(0.dp) // Explicitly ensure no extra padding is added by Modifier.fillMaxSize()
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "Image",
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text("Failed to load image", color = Color.Red)
+            }
         }
     }
 }
