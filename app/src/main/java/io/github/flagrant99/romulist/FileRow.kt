@@ -11,8 +11,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import java.io.File
+import com.caverock.androidsvg.SVG
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +52,8 @@ fun FileRow(
     isSelected: Boolean = false,
     showIcon: Boolean = true,
     isAtHome: Boolean = false,
+    currentPath: File? = null,
+    file: File? = null,
     swapAB: Boolean = false,
     useLargeFont: Boolean = false,
     shouldAutoCaptureFocus: Boolean = false,
@@ -121,53 +130,91 @@ fun FileRow(
             }
 
             if (isAtHome && isDirectory) {
-                when (name)
-                {
-                    "atari2600", "atari5200", "atari7800", "c64", "vectrex", "fbneo", "mame", "colecovision", "neogeo" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_joystick_24),
-                        contentDescription = null,
-                        tint = iconTint
-                    )
-                    "gb", "gba", "gbc", "gamegear" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_gamepad_24),
-                        contentDescription = null,
-                        tint = iconTint
-                    )
-                    "snes" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_gamepad_circle_right_24),
-                        contentDescription = null,
-                        tint = iconTint
-                    )
-                    "nes" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_gamepad_right_24),
-                    contentDescription = null,
-                    tint = iconTint
-                        )
-                    "3do", "pcengine", "pcenginecd", "mastersystem", "megadrive", "saturn", "sega32x", "segacd" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_videogame_asset_24 ),
-                        contentDescription = null,
-                        tint = iconTint
-                    )
-                    "apps" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_apps_24),
-                        contentDescription = null,
-                        tint = iconTint
-                    )
-                    "ports" -> Icon(
-                        painter = painterResource(id = R.drawable.outline_directions_boat_24),
-                        contentDescription = null,
-                        tint = iconTint
-                    )
+                val svgFile = remember(currentPath, file, name) {
+                    if (currentPath != null) {
+                        val targetName = file?.name ?: name
+                        currentPath.listFiles()?.firstOrNull { 
+                            it.isFile && it.extension.lowercase() == "svg" && it.nameWithoutExtension.equals(targetName, ignoreCase = true) 
+                        }
+                    } else null
+                }
 
-                    else ->
+                val svgBitmap = remember(svgFile) {
+                    if (svgFile != null && svgFile.exists()) {
+                        try {
+                            val svg = SVG.getFromInputStream(svgFile.inputStream())
+                            val docW = if (svg.documentWidth > 0f) svg.documentWidth else 24f
+                            val docH = if (svg.documentHeight > 0f) svg.documentHeight else 24f
+                            
+                            val scale = maxOf(128f / docW, 128f / docH)
+                            val bitmap = Bitmap.createBitmap((docW * scale).toInt().coerceAtLeast(128), (docH * scale).toInt().coerceAtLeast(128), Bitmap.Config.ARGB_8888)
+                            val canvas = android.graphics.Canvas(bitmap)
+                            canvas.scale(scale, scale)
+                            svg.renderToCanvas(canvas)
+                            bitmap
+                        } catch (_: Exception) {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }
+
+                if (svgBitmap != null) {
+                    Image(
+                        bitmap = svgBitmap.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(iconTint)
+                    )
+                } else {
+                    when (name)
                     {
-                        Icon(
-                            painter = painterResource(id = R.drawable.outline_stadia_controller_24),
+                        "atari2600", "atari5200", "atari7800", "c64", "vectrex", "fbneo", "mame", "colecovision", "neogeo" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_joystick_24),
                             contentDescription = null,
                             tint = iconTint
                         )
-                    }
+                        "gb", "gba", "gbc", "gamegear" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_gamepad_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                        "snes" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_gamepad_circle_right_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                        "nes" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_gamepad_right_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                        "3do", "pcengine", "pcenginecd", "mastersystem", "megadrive", "saturn", "sega32x", "segacd" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_videogame_asset_24 ),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                        "apps" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_apps_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
+                        "ports" -> Icon(
+                            painter = painterResource(id = R.drawable.outline_directions_boat_24),
+                            contentDescription = null,
+                            tint = iconTint
+                        )
 
+                        else ->
+                        {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_stadia_controller_24),
+                                contentDescription = null,
+                                tint = iconTint
+                            )
+                        }
+                    }
                 }
             } else {
                 Icon(

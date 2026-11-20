@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <!-- Atari 7800 ProLine Joystick -->
+  <rect x="7" y="7" width="10" height="14" rx="2" stroke="#FFFFFF" stroke-width="1.6"/>
+  <!-- Top stick and knob -->
+  <line x1="12" y1="3.5" x2="12" y2="7" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="12" cy="3" r="1.5" fill="#FFFFFF"/>
+  <!-- Left and right side fire buttons -->
+  <rect x="5" y="10" width="2" height="3.5" rx="0.8" fill="#FFFFFF"/>
+  <rect x="17" y="10" width="2" height="3.5" rx="0.8" fill="#FFFFFF"/>
+  <!-- Center detail lines -->
+  <line x1="9.5" y1="10.5" x2="14.5" y2="10.5" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="9.5" y1="17.5" x2="14.5" y2="17.5" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>
+</svg>

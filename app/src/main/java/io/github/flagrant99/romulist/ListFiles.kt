@@ -218,12 +218,15 @@ fun ListFiles(
     val firstItemFocusRequester = remember { FocusRequester() }
     val selectedItemFocusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(currentPath, allowedExtensions, nameExclusions, fileNamesMap) {
+    LaunchedEffect(currentPath, allowedExtensions, nameExclusions, fileNamesMap, isAtHome) {
         isScanning = true
         withContext(Dispatchers.IO) {
             val result = currentPath.listFiles()
                 ?.filter { it.name != "romulist.xml" && !it.name.startsWith(".") }
                 ?.filter { file ->
+                    // When isAtHome is true do not display .svg files in files list
+                    if (isAtHome && file.extension.lowercase() == "svg") return@filter false
+
                     // Filter by name exclusions (usually for folders as requested)
                     if (nameExclusions.any { it.equals(file.name, ignoreCase = true) }) return@filter false
 
@@ -342,6 +345,8 @@ fun ListFiles(
                                 isSelected = isItemSelected,
                                 showIcon = showIcons,
                                 isAtHome = isAtHome,
+                                currentPath = currentPath,
+                                file = file,
                                 swapAB = swapAB,
                                 useLargeFont = useLargeFont,
                                 shouldAutoCaptureFocus = shouldAutoCaptureFocus,
