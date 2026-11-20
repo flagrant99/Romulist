@@ -168,53 +168,11 @@ fun FileRow(
                         colorFilter = ColorFilter.tint(iconTint)
                     )
                 } else {
-                    when (name)
-                    {
-                        "atari2600", "atari5200", "atari7800", "c64", "vectrex", "fbneo", "mame", "colecovision", "neogeo" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_joystick_24),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-                        "gb", "gba", "gbc", "gamegear" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_gamepad_24),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-                        "snes" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_gamepad_circle_right_24),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-                        "nes" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_gamepad_right_24),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-                        "3do", "pcengine", "pcenginecd", "mastersystem", "megadrive", "saturn", "sega32x", "segacd" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_videogame_asset_24 ),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-                        "apps" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_apps_24),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-                        "ports" -> Icon(
-                            painter = painterResource(id = R.drawable.outline_directions_boat_24),
-                            contentDescription = null,
-                            tint = iconTint
-                        )
-
-                        else ->
-                        {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_stadia_controller_24),
-                                contentDescription = null,
-                                tint = iconTint
-                            )
-                        }
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_stadia_controller_24),
+                        contentDescription = null,
+                        tint = iconTint
+                    )
                 }
             } else {
                 Icon(
