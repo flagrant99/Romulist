@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.core.graphics.createBitmap
 import java.io.File
 
+@Suppress("UNUSED_PARAMETER")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileViewer(
@@ -36,14 +37,20 @@ fun FileViewer(
 ) {
     var currentFile by remember { mutableStateOf(file) }
     val extension = currentFile.extension.lowercase()
+    val isImage = extension in listOf("png", "jpg", "jpeg")
+    var rotation by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(currentFile.name, style = MaterialTheme.typography.titleMedium) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    if (isImage) {
+                        IconButton(onClick = {
+                            rotation = (rotation + 90) % 360
+                        }) {
+                            Icon(Icons.Default.RotateRight, contentDescription = "Rotate")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -70,7 +77,10 @@ fun FileViewer(
                 "png", "jpg", "jpeg" -> {
                     ImageViewer(
                         file = currentFile,
-                        onFileChange = { newFile -> currentFile = newFile }
+                        rotation = rotation,
+                        onFileChange = { newFile -> 
+                            currentFile = newFile
+                        }
                     )
                 }
                 else -> {
@@ -210,11 +220,18 @@ fun PdfViewer(file: File) {
 @Composable
 fun ImageViewer(
     file: File,
+    rotation: Int,
     onFileChange: (File) -> Unit
 ) {
     val context = LocalContext.current
-    val bitmap = remember(file) {
-        android.graphics.BitmapFactory.decodeFile(file.absolutePath)
+    val bitmap = remember(file, rotation) {
+        val decoded = android.graphics.BitmapFactory.decodeFile(file.absolutePath)
+        if (decoded != null && rotation != 0) {
+            val matrix = android.graphics.Matrix().apply { postRotate(rotation.toFloat()) }
+            Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, matrix, true)
+        } else {
+            decoded
+        }
     }
 
     // Swipe detection logic
