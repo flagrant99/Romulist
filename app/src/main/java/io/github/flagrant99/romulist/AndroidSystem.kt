@@ -184,6 +184,93 @@ fun AndroidSystem(
             val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
             val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
+            fun launchDisplaySettings() {
+                val candidateIntents = listOf(
+                    // Samsung Motion Smoothness
+                    Intent("com.samsung.settings.MOTION_SMOOTHNESS"),
+                    Intent().setClassName("com.android.settings", "com.android.settings.Settings\$MotionSmoothnessActivity"),
+                    Intent().setClassName("com.android.settings", "com.android.settings.display.MotionSmoothnessActivity"),
+
+                    // Pixel / Stock Android Smooth Display & High Refresh Rate
+                    Intent("android.settings.SMOOTH_DISPLAY_SETTINGS"),
+                    Intent().setClassName("com.android.settings", "com.android.settings.Settings\$HighRefreshRateSettingsActivity"),
+                    Intent().setClassName("com.android.settings", "com.android.settings.Settings\$RefreshRateSettingsActivity"),
+                    Intent().setClassName("com.android.settings", "com.android.settings.Settings\$ScreenRefreshRateActivity"),
+                    Intent().setClassName("com.android.settings", "com.android.settings.Settings\$DisplaySettingsActivity"),
+
+                    // OEM specific (OnePlus / Oppo / Realme)
+                    Intent().setClassName("com.oneplus.settings", "com.oneplus.settings.ScreenRefreshRateActivity"),
+                    Intent().setClassName("com.coloros.settings", "com.coloros.settings.feature.display.fps.FpsSettingsActivity"),
+
+                    // Standard Display & System settings fallbacks
+                    Intent(Settings.ACTION_DISPLAY_SETTINGS),
+                    Intent(Settings.ACTION_SETTINGS)
+                )
+
+                for (intent in candidateIntents) {
+                    try {
+                        context.startActivity(intent)
+                        return
+                    } catch (_: Exception) {
+                        // Continue trying candidate intents
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused = it.isFocused }
+                    .focusable()
+                    .onPreviewKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyUp) {
+                            when (keyEvent.nativeKeyEvent.keyCode) {
+                                launchKey,
+                                KeyEvent.KEYCODE_DPAD_CENTER,
+                                KeyEvent.KEYCODE_ENTER -> {
+                                    launchDisplaySettings()
+                                    true
+                                }
+                                backKey -> {
+                                    onBack()
+                                    true
+                                }
+                                else -> false
+                            }
+                        } else false
+                    }
+                    .background(if (isFocused) Color.Green.copy(alpha = 0.2f) else Color.Transparent)
+                    .clickable { launchDisplaySettings() }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "DISPLAY REFRESH RATE",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(
+                            color = Color.Green.copy(alpha = 0.5f),
+                            offset = Offset(0f, 0f),
+                            blurRadius = 12f
+                        )
+                    ),
+                    color = Color.Green
+                )
+                Text(
+                    text = "Shortcut to Display settings (then tap Motion smoothness for refresh rate)",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        shadow = Shadow(Color.Green.copy(alpha = 0.3f), blurRadius = 4f)
+                    ),
+                    color = Color.Green
+                )
+            }
+        }
+
+        item {
+            var isFocused by remember { mutableStateOf(false) }
+            val backKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_B else KeyEvent.KEYCODE_BUTTON_A
+            val launchKey = if (swapAB) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
             fun launchDevSettings() {
                 try {
                     val intent = Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
