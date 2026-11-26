@@ -1,5 +1,5 @@
 <romulist>
-	<folder name="GameCube" extensions="rvz" use_gamelistxml_names="Y">
+	<folder name="GameCube" extensions="rvz, iso" use_gamelistxml_names="Y">
 		  <intent name="Dolphin Standalone" packageName="org.dolphinemu.dolphinemu" className="org.dolphinemu.dolphinemu.ui.main.MainActivity">
 		    <action name="android.intent.action.VIEW" />
 		    <data value="$CONTENT_URI" />
