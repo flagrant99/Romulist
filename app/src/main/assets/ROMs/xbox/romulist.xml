@@ -1,0 +1,20 @@
+<romulist>
+	<folder name="Xbox" extensions="iso" use_gamelistxml_names="Y">
+                    <intent name="hakuX Standalone" packageName="com.rfandango.haku_x" className="com.rfandango.haku_x.LauncherActivity">
+		    <action name="android.intent.action.VIEW" />
+		    <data value="$CONTENT_URI" />
+		  </intent>
+		 <media>
+			<cover type="relative" useSubfolder="false">m/cover</cover>
+			<marquee type="relative" useSubfolder="false">m/marquee</marquee>
+			<mixart type="relative" useSubfolder="false">m/mixart</mixart>
+			<screen type="relative" useSubfolder="false">m/screen</screen>
+			<video type="relative" useSubfolder="false">m/video</video>
+		 </media>
+	</folder>
+	<exclusions>
+		<folder name="m" />
+		<folder name="r" />
+		<folder name="u" />
+	</exclusions>
+</romulist>
